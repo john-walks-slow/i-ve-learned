@@ -1,6 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 import tailwindcss from '@tailwindcss/vite';
+import sitemap from '@astrojs/sitemap';
 
 // https://astro.build/config
 export default defineConfig({
@@ -16,6 +17,10 @@ export default defineConfig({
       wrap: true,
     },
   },
+  integrations: [
+    sitemap(),
+    // OG 图见 src/pages/og/[...route].ts（astro-og-canvas 端点模式）
+  ],
   vite: {
     plugins: [tailwindcss()],
     // Tailwind v4 OKLCH colors can be rewritten incorrectly by Lightning CSS.

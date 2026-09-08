@@ -82,7 +82,7 @@ const statusLabel = isLearned
   : ("status" in data && data.status) || "todo";
 ---
 
-<Base title={data.title} description={data.description}>
+<Base title={data.title} description={data.description} ogSlug={entry.id}>
   <article class="pt-12 pb-16">
     <!-- 头部 -->
     <header>

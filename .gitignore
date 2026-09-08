@@ -25,3 +25,5 @@ pnpm-debug.log*
 
 # mnemon runtime state
 .mnemon/
+test-results/
+playwright-report/

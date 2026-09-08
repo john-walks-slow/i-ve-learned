@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # 1. lint（Biome）
+      - run: pnpm lint
+
+      # 2. 类型检查 + schema 校验（脏数据在此拦截）
+      - run: printf 'y\n' | pnpm exec astro check
+
+      # 3. 构建
+      - run: pnpm build
+
+      # 4. 单元测试（lib 层）
+      - run: pnpm test
+
+      # 5. 性能预算（构建产物体积门禁）
+      - run: ./scripts/budgets.sh
+
+      # 6. e2e 冒烟 + Atlas 截图产物（Playwright 统一管理 preview 服务器）
+      - run: pnpm exec playwright install chromium --with-deps
+      - run: pnpm test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: atlas-ci-screenshots
+          path: test-results/**/atlas-*.png
+          if-no-files-found: ignore
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
