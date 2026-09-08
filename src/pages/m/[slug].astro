@@ -11,7 +11,6 @@ import {
   formatDate,
   formatMinutes,
   formatPages,
-  monthLabel,
   monthsAgo,
 } from "../../lib/materials";
 import { href, slugify } from "../../lib/url";
@@ -99,7 +98,6 @@ const statusLabel = isLearned
 
       <p class="meta text-meta m-0 mt-3">
         {formatDate(data.date)}
-        {monthLabel(data.date) && ''}
         {meta.length > 0 && ` · ${meta.join(' · ')}`}
       </p>
 

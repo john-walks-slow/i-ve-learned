@@ -19,8 +19,9 @@ const pages: Record<string, { title: string; description?: string }> =
       },
     ]),
   );
-// 站点级默认卡片（首页/Atlas/待学页共用）
-pages.index = {
+// 站点级默认卡片（首页/Atlas/待学页共用）。
+// 键用 _site：下划线开头不会是内容 slug（目录 loader 排除 _ 前缀）。
+pages._site = {
   title: "What I've Learned",
   description: "读过的、看完的、动手写下来的——两个 markdown 目录里的人生。",
 };

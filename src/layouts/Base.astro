@@ -9,11 +9,11 @@ interface Props {
   description?: string;
   /** 全幅：放弃 44rem 容器与内边距，让内容（如星图）铺满视口宽度 */
   bleed?: boolean;
-  /** OG 图 slug（/og/<ogSlug>.png）；缺省用站点卡片 index */
+  /** OG 图 slug（/og/<ogSlug>.png）；缺省用站点卡片 _site */
   ogSlug?: string;
 }
 
-const { title, description, bleed = false, ogSlug = "index" } = Astro.props;
+const { title, description, bleed = false, ogSlug = "_site" } = Astro.props;
 const siteName = "What I've Learned";
 const pageTitle = title ? `${title} · ${siteName}` : siteName;
 const mainClass = bleed
@@ -55,11 +55,17 @@ const ogDescription =
           e.preventDefault();
           if (!palette && !loading) {
             loading = true;
-            import("../scripts/command-palette").then(async (mod) => {
-              palette = mod;
-              await mod.ensurePalette();
-              mod.openPalette();
-            });
+            import("../scripts/command-palette")
+              .then(async (mod) => {
+                palette = mod;
+                await mod.ensurePalette();
+                mod.openPalette();
+              })
+              .catch((err) => {
+                // 加载失败允许下次重试（loading 复位）
+                loading = false;
+                console.error("[palette]", err);
+              });
           } else if (palette) {
             palette.openPalette();
           }

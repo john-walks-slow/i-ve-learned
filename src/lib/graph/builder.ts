@@ -4,7 +4,8 @@ import type { MaterialType } from "../schema";
 
 /**
  * 图谱数据模型（纯函数）：材料 + 分类 → 节点/边。
- * demo 条目排除；节点/边的 id 稳定（slug/路径派生）。
+ * demo 条目正常进图谱与统计（上线前整体移除，见计划 §9 决策 #6）；
+ * 节点/边的 id 稳定（slug/路径派生）。
  */
 
 export type AtlasStatus = "done" | "learning" | "todo";

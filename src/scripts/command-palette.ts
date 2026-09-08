@@ -134,7 +134,8 @@ function renderResults(query: string): void {
     for (const item of group) {
       const active = idx === activeIndex ? " is-active" : "";
       const safe = escapeHtml(item.label);
-      html += `<li><a class="item${active}" data-idx="${idx}" href="${withBase(item.href)}">${safe}</a></li>`;
+      const safeHref = escapeHtml(withBase(item.href));
+      html += `<li><a class="item${active}" data-idx="${idx}" href="${safeHref}">${safe}</a></li>`;
       idx++;
     }
   }
