@@ -1,5 +1,6 @@
 {
   "name": "ive-learned",
+  "packageManager": "pnpm@11.24.0",
   "type": "module",
   "version": "0.0.1",
   "engines": {
