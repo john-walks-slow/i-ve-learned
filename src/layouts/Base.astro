@@ -1,0 +1,38 @@
+---
+import "../styles/global.css";
+import SiteFooter from "../components/SiteFooter.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** 全幅：放弃 44rem 容器与内边距，让内容（如星图）铺满视口宽度 */
+  bleed?: boolean;
+}
+
+const { title, description, bleed = false } = Astro.props;
+const siteName = "What I've Learned";
+const pageTitle = title ? `${title} · ${siteName}` : siteName;
+const mainClass = bleed
+  ? "flex-1 w-full"
+  : "flex-1 w-full max-w-[44rem] mx-auto px-6 md:px-8";
+---
+
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{pageTitle}</title>
+    {description && <meta name="description" content={description} />}
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body class="min-h-screen flex flex-col bg-paper text-ink-3">
+    <SiteHeader />
+    <main class={mainClass}>
+      <slot />
+    </main>
+    <SiteFooter />
+  </body>
+</html>

@@ -1,0 +1,20 @@
+---
+import Base from "../layouts/Base.astro";
+import { getBacklog, getLearned } from "../lib/content";
+import { computeStats } from "../lib/stats";
+
+const learned = await getLearned();
+const backlog = await getBacklog();
+const stats = computeStats(learned, backlog);
+---
+
+<Base>
+  <section class="pt-16 pb-8">
+    <h1 class="font-serif text-ink text-3xl font-semibold m-0">What I’ve Learned</h1>
+    <p class="text-meta mt-3">
+      {stats.learnedCount} learned · {stats.hours}h · {stats.fields} fields · now learning:
+      {stats.nowLearning}
+    </p>
+    <p class="font-serif italic text-ink-4 mt-4">M1 管线占位页——时间线首页在 M2 落地。</p>
+  </section>
+</Base>

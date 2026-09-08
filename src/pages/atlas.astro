@@ -1,0 +1,249 @@
+---
+import Base from "../layouts/Base.astro";
+import { getBacklog, getLearned } from "../lib/content";
+import { computeStats } from "../lib/stats";
+import { href } from "../lib/url";
+
+const learned = await getLearned();
+const backlog = await getBacklog();
+const stats = computeStats(learned, backlog);
+const base = import.meta.env.BASE_URL.replace(/\/+$/, "");
+---
+
+<Base title="Atlas" bleed>
+  <div class="atlas-wrap" style="--atlas-h: calc(100vh - 3.5rem - 1px);" data-base={base}>
+    <noscript>
+      <div class="mx-auto px-6 py-16 text-center">
+        <p class="font-serif text-ink">Atlas 需要 JavaScript 渲染。</p>
+        <p class="text-meta mt-2">
+          文本版入口：<a class="text-accent" href={href('/backlog/')}>Backlog</a> 与时间线首页提供同样的信息。
+        </p>
+      </div>
+    </noscript>
+
+    <canvas id="atlas-canvas" class="block w-full h-full" role="img" aria-label="知识星图：分类为星系，节点为学习材料"></canvas>
+
+    <!-- 图例 + 统计（右上角） -->
+    <div class="legend" aria-hidden="true">
+      <div class="legend-row"><span class="dot dot-field"></span>field</div>
+      <div class="legend-row"><span class="dot dot-topic"></span>topic</div>
+      <div class="legend-row"><span class="dot dot-done"></span>learned</div>
+      <div class="legend-row"><span class="dot dot-learning"></span>learning</div>
+      <div class="legend-row"><span class="dot dot-todo"></span>todo</div>
+      <p class="legend-stats text-meta m-0 mt-2">
+        {stats.learnedCount} learned · {stats.waiting + stats.nowLearning} waiting
+      </p>
+    </div>
+
+    <!-- 控制开关（左上角） -->
+    <div class="controls text-ui">
+      <label class="ctl">
+        <input type="checkbox" id="ctl-tags" checked />
+        <span>cross-links</span>
+      </label>
+      <label class="ctl">
+        <input type="checkbox" id="ctl-learned" />
+        <span>learned only</span>
+      </label>
+    </div>
+
+    <!-- 详情侧栏（选中节点时出现） -->
+    <aside id="atlas-panel" class="panel" hidden aria-live="polite">
+      <button id="atlas-panel-close" class="panel-close text-ui" aria-label="Close">✕</button>
+      <div id="atlas-panel-body"></div>
+    </aside>
+  </div>
+</Base>
+
+<style>
+  .atlas-wrap {
+    position: relative;
+    height: var(--atlas-h);
+  }
+
+  .legend {
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-end;
+    pointer-events: none;
+    transition: opacity 0.2s var(--ease-snap);
+  }
+  .atlas-wrap.has-panel .legend { opacity: 0; }
+  .legend-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.04em;
+    color: var(--color-ink-4);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .dot-field {
+    position: relative;
+    border: 1.5px solid var(--color-ink-3);
+  }
+  .dot-field::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    border-radius: 50%;
+    background: var(--color-ink);
+  }
+  .dot-topic {
+    border-radius: 0;
+    transform: rotate(45deg) scale(0.8);
+    border: 1.2px solid var(--color-ink-3);
+  }
+  .dot-done { background: var(--color-ink); }
+  .dot-learning {
+    border: 1.2px solid var(--color-ink);
+    background: linear-gradient(to right, var(--color-accent) 50%, transparent 50%);
+  }
+  .dot-todo { border: 1.2px solid var(--color-ink-4); }
+
+  .controls {
+    position: absolute;
+    top: 12px;
+    left: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .ctl {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: var(--color-ink-4);
+    cursor: pointer;
+    user-select: none;
+  }
+  .ctl input { accent-color: var(--color-accent); }
+
+  .panel {
+    position: absolute;
+    top: 56px;
+    right: 16px;
+    width: min(20rem, calc(100% - 2rem));
+    background: var(--color-paper);
+    border: 1px solid var(--color-line-2);
+    border-radius: var(--radius-md);
+    padding: 16px;
+    box-shadow: 0 1px 3px rgb(33 29 23 / 0.06), 0 8px 24px rgb(33 29 23 / 0.05);
+  }
+  .panel-close {
+    position: absolute;
+    top: 8px; right: 8px;
+    border: 0;
+    background: none;
+    color: var(--color-ink-4);
+    cursor: pointer;
+    padding: 4px;
+    line-height: 1;
+  }
+</style>
+
+<script>
+  // 零框架加载策略：滚入视口后动态 import 渲染器与数据（首屏零交互 JS）
+  const canvas = document.getElementById('atlas-canvas') as HTMLCanvasElement | null;
+  const panel = document.getElementById('atlas-panel');
+  const panelBody = document.getElementById('atlas-panel-body');
+  const panelClose = document.getElementById('atlas-panel-close');
+  const ctlTags = document.getElementById('ctl-tags') as HTMLInputElement | null;
+  const ctlLearned = document.getElementById('ctl-learned') as HTMLInputElement | null;
+  const base = document.querySelector<HTMLElement>('.atlas-wrap')?.dataset.base ?? '';
+
+  const esc = (s: unknown) =>
+    String(s ?? '').replace(/[&<>"']/g, (c) => ({
+      '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;',
+    }[c] as string));
+
+  function showPanel(html: string): void {
+    if (!panel || !panelBody) return;
+    panelBody.innerHTML = html;
+    panel.removeAttribute('hidden');
+    panel.closest('.atlas-wrap')?.classList.add('has-panel');
+  }
+
+  function hidePanel(): void {
+    panel?.setAttribute('hidden', '');
+    panel?.closest('.atlas-wrap')?.classList.remove('has-panel');
+  }
+
+  async function boot(): Promise<void> {
+    if (!canvas) return;
+    const [{ AtlasRenderer }, graphRes] = await Promise.all([
+      import('../components/atlas/renderer'),
+      fetch(`${base}/graph.json`),
+    ]);
+    if (!graphRes.ok) throw new Error(`graph.json ${graphRes.status}`);
+    const graph = await graphRes.json();
+
+    const css = getComputedStyle(document.documentElement);
+    // 入场动画每次会话只播一次（刷新不重播；reduced-motion 永不播）
+    const seenEntrance = (() => {
+      try {
+        return sessionStorage.getItem('atlas-entered') === '1';
+      } catch {
+        return false;
+      }
+    })();
+    const renderer = new AtlasRenderer({
+      canvas,
+      graph,
+      colors: {
+        ink: css.getPropertyValue('--color-ink').trim(),
+        inkMid: css.getPropertyValue('--color-ink-3').trim(),
+        inkFaint: css.getPropertyValue('--color-ink-4').trim(),
+        line: css.getPropertyValue('--color-line').trim(),
+        accent: css.getPropertyValue('--color-accent').trim(),
+      },
+      reducedMotion:
+        matchMedia('(prefers-reduced-motion: reduce)').matches || seenEntrance,
+      onSelect(node) {
+        if (!node) {
+          hidePanel();
+          return;
+        }
+        if (node.kind === 'category') {
+          showPanel(`
+            <p class="text-meta m-0">${node.top ? 'field' : 'topic'}</p>
+            <h2 class="font-serif text-ink text-xl font-semibold mt-1 mb-2">${esc(node.label)}</h2>
+          `);
+        } else {
+          const statusText = { done: 'learned', learning: 'learning', todo: 'todo' }[node.status] ?? '';
+          showPanel(`
+            <p class="text-meta m-0">${esc(node.type)} · ${esc(statusText)}</p>
+            <h2 class="font-serif text-ink text-lg font-semibold mt-1 mb-2">${esc(node.label)}</h2>
+            <a class="text-ui text-accent no-underline" href="${base}/m/${encodeURIComponent(node.slug)}">view note →</a>
+          `);
+        }
+      },
+    });
+
+    ctlTags?.addEventListener('change', () => renderer.setTagLinksVisible(ctlTags.checked));
+    ctlLearned?.addEventListener('change', () => renderer.setLearnedOnly(ctlLearned.checked));
+    panelClose?.addEventListener('click', hidePanel);
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') hidePanel();
+    });
+    try {
+      sessionStorage.setItem('atlas-entered', '1');
+    } catch {
+      /* 隐私模式等场景静默降级 */
+    }
+  }
+
+  const io = new IntersectionObserver((entries) => {
+    if (entries.some((e) => e.isIntersecting)) {
+      io.disconnect();
+      boot().catch((err) => console.error('[atlas]', err));
+    }
+  });
+  if (canvas) io.observe(canvas);
+</script>

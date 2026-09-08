@@ -1,0 +1,45 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.3.2/schema.json",
+  "vcs": {
+    "enabled": true,
+    "clientKind": "git",
+    "useIgnoreFile": true
+  },
+  "files": {
+    // Tailwind v4 语法（@utility/@theme/@custom-variant）Biome 尚不能稳定解析，CSS 交给 Tailwind 工具链
+    "includes": ["**", "!**/*.css"]
+  },
+  "formatter": {
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "recommended": true,
+      "correctness": {
+        // .astro frontmatter 变量在模板中使用，Biome 看不到模板 → 关闭对 astro 的该检查
+        "noUnusedVariables": {
+          "level": "error",
+          "fix": "safe",
+          "options": {}
+        }
+      }
+    }
+  },
+  "overrides": [
+    {
+      // Astro 组件：frontmatter 与模板是两个世界，只做格式化 + 安全规则
+      "includes": ["**/*.astro"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedVariables": "off",
+            "noUnusedImports": "off"
+          }
+        }
+      }
+    }
+  ]
+}
