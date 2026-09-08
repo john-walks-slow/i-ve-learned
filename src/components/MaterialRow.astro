@@ -1,0 +1,57 @@
+---
+import type { BacklogMaterial, LearnedMaterial } from "../lib/content";
+import { formatMinutes, formatPages } from "../lib/materials";
+/**
+ * 分类页/标签页的紧凑条目行（计划 §3.5，一个模板族复用）。
+ * 与时间线条目同语言：衬线标题 + mono 元数据 + 发丝线。
+ */
+import { href } from "../lib/url";
+
+interface Props {
+  item: LearnedMaterial | BacklogMaterial;
+}
+
+const { item } = Astro.props;
+const isLearned = "duration" in item;
+const meta: string[] = [item.type];
+if (isLearned && item.duration) meta.push(formatMinutes(item.duration));
+if (!isLearned && item.est) meta.push(formatMinutes(item.est));
+if (item.pages) meta.push(formatPages(item.pages));
+if (!isLearned) meta.push(item.status === "learning" ? "learning" : "todo");
+---
+
+<article class="row" data-type={item.type}>
+  <h3 class="m-0 text-[1.0625rem] leading-snug">
+    <a
+      class="font-serif text-ink font-medium no-underline hover:text-accent transition-colors"
+      href={href(`/m/${item.slug}/`)}
+    >{item.title}</a>
+    {item.demo && <span class="badge text-meta">示例</span>}
+  </h3>
+  <p class="text-meta m-0 mt-1">
+    {meta.join(' · ')}
+    {item.category && item.category.length > 0 && (
+      <span class="cat"> · {item.category.join(' / ')}</span>
+    )}
+  </p>
+</article>
+
+<style>
+  .row + .row {
+    border-top: 1px solid var(--color-line);
+    padding-top: 0.75rem;
+  }
+  .row { padding-bottom: 0.75rem; }
+  .badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0 0.375rem;
+    border: 1px solid var(--color-line-2);
+    border-radius: var(--radius-sm);
+    color: var(--color-ink-4);
+    font-size: 0.625rem;
+    line-height: 1.5;
+    vertical-align: 2px;
+  }
+  .cat { color: var(--color-ink-5); }
+</style>

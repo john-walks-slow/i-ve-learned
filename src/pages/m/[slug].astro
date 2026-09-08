@@ -1,0 +1,235 @@
+---
+import { type CollectionEntry, getCollection } from "astro:content";
+/**
+ * 材料详情页 /m/[slug]（计划 §3.4）。
+ * learned 与 backlog 共用同一 URL 空间：晋升（git mv）不改链接。
+ */
+import Base from "../../layouts/Base.astro";
+import type { BacklogMaterial, LearnedMaterial } from "../../lib/content";
+import { getBacklog, getLearned, renderMaterial } from "../../lib/content";
+import {
+  formatDate,
+  formatMinutes,
+  formatPages,
+  monthLabel,
+  monthsAgo,
+} from "../../lib/materials";
+import { href, slugify } from "../../lib/url";
+
+export async function getStaticPaths() {
+  const learned = await getCollection("learned", ({ data }) => !data.draft);
+  const backlog = await getCollection("backlog", ({ data }) => !data.draft);
+  return [...learned, ...backlog].map((entry) => ({
+    params: { slug: entry.id },
+    props: { entry },
+  }));
+}
+
+interface Props {
+  entry: CollectionEntry<"learned" | "backlog">;
+}
+
+const { entry } = Astro.props;
+const isLearned = entry.collection === "learned";
+const learnedAll = await getLearned();
+const backlogAll = await getBacklog();
+const pool: (LearnedMaterial | BacklogMaterial)[] = [
+  ...learnedAll,
+  ...backlogAll,
+];
+
+const data = entry.data;
+const meta: string[] = [];
+if (isLearned && "duration" in data && data.duration)
+  meta.push(`用时 ${formatMinutes(data.duration)}`);
+if (!isLearned && "est" in data && data.est)
+  meta.push(`预计 ${formatMinutes(data.est)}`);
+if (data.pages) meta.push(formatPages(data.pages));
+if (data.source) meta.push(String(data.source));
+
+// 等了 n 个月终于学了（从 backlog 晋升且保留 added）
+let waitedMonths = 0;
+if (isLearned && "added" in data && data.added instanceof Date) {
+  waitedMonths = monthsAgo(data.added, data.date);
+}
+
+// 关联条目：同分类优先，其次共享标签（top 4，排除自身）
+const selfTags = new Set(data.tags ?? []);
+const related = pool
+  .filter((m) => m.slug !== entry.id)
+  .map((m) => {
+    let score = 0;
+    if (data.category && m.category && m.category[0] === data.category[0])
+      score += 2;
+    if (
+      data.category &&
+      m.category &&
+      m.category.join("/") === data.category.join("/")
+    )
+      score += 3;
+    const shared = m.tags.filter((t) => selfTags.has(t)).length;
+    score += shared;
+    return { m, score };
+  })
+  .filter((r) => r.score > 0)
+  .sort((a, b) => b.score - a.score || b.m.date.getTime() - a.m.date.getTime())
+  .slice(0, 4)
+  .map((r) => r.m);
+
+const { Content } = await renderMaterial(entry);
+const statusLabel = isLearned
+  ? "learned"
+  : ("status" in data && data.status) || "todo";
+---
+
+<Base title={data.title} description={data.description}>
+  <article class="pt-12 pb-16">
+    <!-- 头部 -->
+    <header>
+      <p class="kicker text-meta m-0">
+        <span class="text-accent">{data.type}</span>
+        {' · '}
+        <span>{statusLabel}</span>
+        {data.demo && <span class="badge">示例</span>}
+        {data.revisit && <span class="badge">revisit</span>}
+      </p>
+      <h1 class="font-serif text-ink text-[1.625rem] md:text-[1.875rem] leading-snug font-semibold m-0 mt-2">
+        {data.title}
+      </h1>
+
+      <p class="meta text-meta m-0 mt-3">
+        {formatDate(data.date)}
+        {monthLabel(data.date) && ''}
+        {meta.length > 0 && ` · ${meta.join(' · ')}`}
+      </p>
+
+      {waitedMonths > 0 && (
+        <p class="waited font-serif italic text-ink-4 text-[0.9375rem] m-0 mt-2">
+          从想学到学完，等了 {waitedMonths} 个月。
+        </p>
+      )}
+
+      <div class="crumbs mt-4 flex flex-wrap items-center gap-x-2 gap-y-1 text-meta">
+        {data.category && (
+          <>
+            <a href={href(`/category/${slugify(data.category[0])}/`)}>{data.category[0]}</a>
+            {data.category[1] && (
+              <>
+                <span class="sep">/</span>
+                <a
+                  href={href(`/category/${slugify(data.category[0])}/${slugify(data.category[1])}/`)}
+                >
+                  {data.category[1]}
+                </a>
+              </>
+            )}
+          </>
+        )}
+        {data.tags.map((tag) => (
+          <a class="tag" href={href(`/tags/${tag}/`)}>#{tag}</a>
+        ))}
+      </div>
+    </header>
+
+    <div class="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_13rem] lg:gap-12">
+      <!-- 正文 -->
+      <div class="note-body min-w-0">
+        <Content />
+      </div>
+
+      <!-- 侧栏（宽屏） -->
+      <aside class="side">
+        {data.url && (
+          <p class="m-0">
+            <a
+              class="read-link text-ui"
+              href={data.url}
+              target="_blank"
+              rel="noopener noreferrer"
+            >读原文 ↗</a
+            >
+          </p>
+        )}
+        <dl class="side-meta m-0 mt-6">
+          {data.rating && (
+            <div>
+              <dt class="text-meta">rating</dt>
+              <dd class="m-0 font-mono text-sm text-ink-2">{'★'.repeat(data.rating)}</dd>
+            </div>
+          )}
+          {data.source && (
+            <div>
+              <dt class="text-meta">source</dt>
+              <dd class="m-0 font-mono text-xs text-ink-3">{data.source}</dd>
+            </div>
+          )}
+        </dl>
+
+        {related.length > 0 && (
+          <div class="related mt-8">
+            <p class="text-meta m-0 mb-2">related</p>
+            <ul class="list-none m-0 p-0 flex flex-col gap-2">
+              {related.map((m) => (
+                <li>
+                  <a class="rel-link font-serif text-[0.9375rem] leading-snug" href={href(`/m/${m.slug}/`)}>
+                    {m.title}
+                  </a>
+                  <span class="text-meta"> · {m.type}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </aside>
+    </div>
+  </article>
+</Base>
+
+<style>
+  .kicker {
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 0.6875rem;
+  }
+  .badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0 0.375rem;
+    border: 1px solid var(--color-line-2);
+    border-radius: var(--radius-sm);
+    color: var(--color-ink-4);
+    font-size: 0.625rem;
+    line-height: 1.5;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    vertical-align: 1px;
+  }
+  .crumbs a {
+    color: var(--color-ink-4);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-line-2);
+    transition: color 0.15s var(--ease-snap), border-color 0.15s var(--ease-snap);
+  }
+  .crumbs a:hover {
+    color: var(--color-ink-2);
+    border-color: var(--color-ink-5);
+  }
+  .crumbs .tag { border-bottom-style: dotted; }
+  .crumbs .sep { color: var(--color-ink-5); }
+
+  .read-link {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px solid currentColor;
+    padding-bottom: 1px;
+  }
+  .side {
+    font-size: 0.875rem;
+  }
+  .side-meta > div + div { margin-top: 1rem; }
+  .related .rel-link {
+    color: var(--color-ink-2);
+    text-decoration: none;
+  }
+  .related .rel-link:hover { color: var(--color-accent); }
+</style>

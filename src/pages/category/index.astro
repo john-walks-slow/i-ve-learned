@@ -1,0 +1,88 @@
+---
+import { CATEGORIES } from "../../data/categories";
+/**
+ * 分类索引页 /category/（fields 总览）。
+ * 也是星图的文本投影（a11y）：不想/不能使用 Canvas 的访客从这里按字段浏览。
+ */
+import Base from "../../layouts/Base.astro";
+import type { BacklogMaterial, LearnedMaterial } from "../../lib/content";
+import { getBacklog, getLearned } from "../../lib/content";
+import { href } from "../../lib/url";
+
+const learned = await getLearned();
+const backlog = await getBacklog();
+const pool: (LearnedMaterial | BacklogMaterial)[] = [...learned, ...backlog];
+
+const fields = CATEGORIES.map((def) => {
+  const items = pool.filter((m) => m.category?.[0] === def.name);
+  return {
+    name: def.name,
+    note: def.note,
+    count: items.length,
+    hours: Math.round(
+      items.reduce(
+        (s, m) =>
+          s + (("duration" in m && m.duration) || ("est" in m && m.est) || 0),
+        0,
+      ) / 60,
+    ),
+    children: (def.children ?? []).map((child) => ({
+      name: child,
+      count: pool.filter(
+        (m) => m.category?.join("/") === `${def.name}/${child}`,
+      ).length,
+    })),
+  };
+}).filter((f) => f.count > 0);
+---
+
+<Base title="Fields" description="按领域浏览学习材料">
+  <section class="pt-12 pb-16">
+    <nav class="crumbs text-meta" aria-label="breadcrumb">
+      <a href={href('/')}>timeline</a>
+      <span class="sep">/</span>
+      <span aria-current="page">fields</span>
+    </nav>
+
+    <h1 class="font-serif text-ink text-2xl font-semibold m-0 mt-3">Fields</h1>
+    <p class="text-meta m-0 mt-2">星图的文本投影 · {fields.length} fields</p>
+
+    <div class="grid mt-10 gap-x-10 gap-y-8 md:grid-cols-2">
+      {fields.map((f) => (
+        <div class="field">
+          <h2 class="m-0 text-[1.125rem]">
+            <a
+              class="font-serif text-ink font-semibold no-underline hover:text-accent transition-colors"
+              href={href(`/category/${f.slug}/`)}
+            >{f.name}</a>
+            <span class="count text-meta">{f.count}</span>
+          </h2>
+          {f.note && <p class="note font-serif italic text-ink-4 text-sm m-0 mt-1">{f.note}</p>}
+          {f.children.length > 0 && (
+            <ul class="list-none flex flex-wrap gap-x-4 gap-y-1 m-0 mt-3 p-0">
+              {f.children.map((c) => (
+                <li>
+                  <a class="child text-meta" href={href(`/category/${f.slug}/${c.slug}/`)}>
+                    {c.name}<span class="n">{c.count}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      ))}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .crumbs a { color: var(--color-ink-4); text-decoration: none; }
+  .crumbs a:hover { color: var(--color-ink-2); }
+  .crumbs .sep { margin: 0 0.375rem; color: var(--color-ink-5); }
+  .crumbs [aria-current] { color: var(--color-ink-2); }
+
+  .count { margin-left: 0.5rem; color: var(--color-ink-5); }
+  .child { color: var(--color-ink-4); text-decoration: none; border-bottom: 1px dotted var(--color-line-2); }
+  .child:hover { color: var(--color-ink-2); border-color: var(--color-ink-5); }
+  .n { margin-left: 0.3em; color: var(--color-ink-5); }
+</style>

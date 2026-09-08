@@ -9,6 +9,13 @@ export default defineConfig({
   site: 'https://example.github.io',
   base: '/i-ve-learned',
   trailingSlash: 'never',
+  markdown: {
+    shikiConfig: {
+      // 低饱和极简主题，匹配纸感设计（代码块背景在 global.css 中透明化）
+      theme: 'min-light',
+      wrap: true,
+    },
+  },
   vite: {
     plugins: [tailwindcss()],
     // Tailwind v4 OKLCH colors can be rewritten incorrectly by Lightning CSS.

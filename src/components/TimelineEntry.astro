@@ -46,7 +46,14 @@ if (item.pages) meta.push(formatPages(item.pages));
     )}
     <p class="meta text-meta m-0 mt-1">
       {meta.join(' · ')}
-      {item.tags.length > 0 && <span class="tags"> · {item.tags.join(' · ')}</span>}
+      {item.tags.length > 0 && (
+        <span class="tags">
+          {' · '}
+          {item.tags.map((tag) => (
+            <a class="tag" href={href(`/tags/${tag}/`)}>{tag}</a>
+          ))}
+        </span>
+      )}
     </p>
   </div>
   <span class="type text-meta" aria-hidden="true">{TYPE_PLURAL[item.type]}</span>
@@ -97,6 +104,12 @@ if (item.pages) meta.push(formatPages(item.pages));
   .desc { max-width: 38rem; }
 
   .meta .tags { color: var(--color-ink-4); }
+  .meta .tag {
+    color: var(--color-ink-4);
+    text-decoration: none;
+  }
+  .meta .tag:hover { color: var(--color-accent); }
+  .meta .tag + .tag { margin-left: 0.55em; }
 
   .type {
     color: var(--color-ink-5);

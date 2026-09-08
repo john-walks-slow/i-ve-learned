@@ -36,7 +36,19 @@ export const baseMaterialSchema = z.object({
     }),
   description: z.string().max(300).optional(),
   url: z.url().optional(),
-  tags: z.array(z.string().min(1)).max(12).default([]),
+  // 标签直接作为 URL 段（/tags/[tag]/），限定小写字母数字连字符
+  tags: z
+    .array(
+      z
+        .string()
+        .regex(
+          /^[a-z0-9][a-z0-9-]*$/,
+          "标签需为 URL 安全的小写形式（如 latency、event-loop）",
+        ),
+    )
+    .min(1)
+    .max(12)
+    .default([]),
   pages: z.number().int().positive().optional(),
   source: z.string().max(120).optional(),
   rating: z.number().int().min(1).max(5).optional(),

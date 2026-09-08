@@ -1,0 +1,59 @@
+---
+import MaterialRow from "../../components/MaterialRow.astro";
+/**
+ * 标签页 /tags/[tag]（计划 §3.5）：同标签条目列表。
+ * 标签从内容派生（无注册表）——构建期收集。
+ */
+import Base from "../../layouts/Base.astro";
+import type { BacklogMaterial, LearnedMaterial } from "../../lib/content";
+import { getBacklog, getLearned } from "../../lib/content";
+import { href } from "../../lib/url";
+
+export async function getStaticPaths() {
+  const learned = await getLearned();
+  const backlog = await getBacklog();
+  const tags = new Set<string>();
+  for (const m of [...learned, ...backlog]) {
+    for (const t of m.tags) tags.add(t);
+  }
+  return [...tags].map((tag) => ({ params: { tag } }));
+}
+
+const { tag } = Astro.params;
+const tagName = tag ?? "";
+const learned = await getLearned();
+const backlog = await getBacklog();
+const pool: (LearnedMaterial | BacklogMaterial)[] = [...learned, ...backlog];
+const items = pool
+  .filter((m) => m.tags.includes(tag ?? ""))
+  .sort((a, b) => b.date.getTime() - a.date.getTime());
+---
+
+<Base title={`#${tagName}`} description={`标签 ${tagName} 下的学习材料`}>
+  <section class="pt-12 pb-16">
+    <nav class="crumbs text-meta" aria-label="breadcrumb">
+      <a href={href('/')}>timeline</a>
+      <span class="sep">/</span>
+      <span aria-current="page">#{tagName}</span>
+    </nav>
+
+    <h1 class="font-mono text-ink text-xl font-medium m-0 mt-3">#{tag}</h1>
+    <p class="text-meta m-0 mt-2">{items.length} items</p>
+
+    <div class="list mt-8 flex flex-col">
+      {items.map((item) => (
+        <MaterialRow item={item} />
+      ))}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .crumbs a {
+    color: var(--color-ink-4);
+    text-decoration: none;
+  }
+  .crumbs a:hover { color: var(--color-ink-2); }
+  .crumbs .sep { margin: 0 0.375rem; color: var(--color-ink-5); }
+  .crumbs [aria-current] { color: var(--color-ink-2); }
+</style>

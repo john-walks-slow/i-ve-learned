@@ -1,0 +1,138 @@
+---
+import MaterialRow from "../../components/MaterialRow.astro";
+import { CATEGORIES } from "../../data/categories";
+/**
+ * 分类页 /category/[...path]（计划 §3.5）：面包屑 + 计数 + 子分类 + 条目列表。
+ * URL 段是 slugify 后的分类名（"OS & Kernel" → "os-kernel"）；
+ * 页面侧反查注册表还原显示名——注册表仍是唯一真相源。
+ */
+import Base from "../../layouts/Base.astro";
+import type { BacklogMaterial, LearnedMaterial } from "../../lib/content";
+import { getBacklog, getLearned } from "../../lib/content";
+import { href, slugify } from "../../lib/url";
+
+export async function getStaticPaths() {
+  const paths: { params: { path: string } }[] = [];
+  for (const def of CATEGORIES) {
+    paths.push({ params: { path: slugify(def.name) } });
+    for (const child of def.children ?? []) {
+      paths.push({
+        params: { path: `${slugify(def.name)}/${slugify(child)}` },
+      });
+    }
+  }
+  return paths;
+}
+
+const { path } = Astro.params;
+const segs = (path ?? "").split("/");
+
+// slug → 注册表反查
+const topDef = CATEGORIES.find((c) => slugify(c.name) === segs[0]);
+const childDef =
+  segs.length > 1
+    ? (topDef?.children ?? []).find((child) => slugify(child) === segs[1])
+    : undefined;
+
+const learned = await getLearned();
+const backlog = await getBacklog();
+const pool: (LearnedMaterial | BacklogMaterial)[] = [...learned, ...backlog];
+
+const isTop = !childDef && !!topDef;
+const fullPath = [topDef?.name, childDef].filter(Boolean).join("/");
+const items = pool
+  .filter((m) => {
+    if (!m.category || !topDef) return false;
+    return isTop
+      ? m.category[0] === topDef.name
+      : m.category.join("/") === fullPath;
+  })
+  .sort((a, b) => b.date.getTime() - a.date.getTime());
+
+// 同顶层的子分类（供下钻，带计数）
+const siblings = isTop
+  ? (topDef?.children ?? []).map((name) => ({
+      name,
+      slug: slugify(name),
+      count: pool.filter(
+        (m) => m.category?.join("/") === `${topDef?.name}/${name}`,
+      ).length,
+    }))
+  : [];
+const topCount = topDef
+  ? isTop
+    ? items.length
+    : pool.filter((m) => m.category?.[0] === topDef.name).length
+  : 0;
+const label = childDef ?? topDef?.name ?? "";
+const topSlug = topDef ? slugify(topDef.name) : "";
+---
+
+<Base title={label} description={`${label} 分类下的学习材料`}>
+  <section class="pt-12 pb-16">
+    <nav class="crumbs text-meta" aria-label="breadcrumb">
+      <a href={href("/category/")}>fields</a>
+      <span class="sep">/</span>
+      {isTop ? (
+        <span aria-current="page">{topDef?.name}</span>
+      ) : (
+        <>
+          <a href={href(`/category/${topSlug}/`)}>{topDef?.name}</a>
+          <span class="sep">/</span>
+          <span aria-current="page">{childDef}</span>
+        </>
+      )}
+    </nav>
+
+    <h1 class="font-serif text-ink text-2xl font-semibold m-0 mt-3">{label}</h1>
+    <p class="text-meta m-0 mt-2">
+      {isTop ? `${topCount} items` : `${items.length} / ${topCount} in ${topDef?.name}`}
+    </p>
+
+    {siblings.length > 0 && (
+      <div class="subs mt-4 flex flex-wrap gap-2">
+        {siblings.map((s) => (
+          <a class="sub text-meta" href={href(`/category/${topSlug}/${s.slug}/`)}>
+            {s.name}<span class="n">{s.count}</span>
+          </a>
+        ))}
+      </div>
+    )}
+
+    <div class="list mt-8 flex flex-col">
+      {items.map((item) => (
+        <MaterialRow item={item} />
+      ))}
+      {items.length === 0 && (
+        <p class="font-serif italic text-ink-4">这个分类还没有条目。</p>
+      )}
+    </div>
+  </section>
+</Base>
+
+<style>
+  .crumbs a {
+    color: var(--color-ink-4);
+    text-decoration: none;
+  }
+  .crumbs a:hover { color: var(--color-ink-2); }
+  .crumbs .sep { margin: 0 0.375rem; color: var(--color-ink-5); }
+  .crumbs [aria-current] { color: var(--color-ink-2); }
+
+  .subs .sub {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.03em;
+    color: var(--color-ink-4);
+    text-decoration: none;
+    border: 1px solid var(--color-line-2);
+    border-radius: var(--radius-full, 999px);
+    padding: 0.125rem 0.625rem;
+    transition: color 0.15s var(--ease-snap), border-color 0.15s var(--ease-snap);
+  }
+  .subs .sub:hover { color: var(--color-ink-2); border-color: var(--color-ink-5); }
+  .subs .n {
+    margin-left: 0.35em;
+    color: var(--color-ink-5);
+  }
+</style>
