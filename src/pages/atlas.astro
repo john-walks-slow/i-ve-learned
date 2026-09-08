@@ -16,12 +16,17 @@ const base = import.meta.env.BASE_URL.replace(/\/+$/, "");
       <div class="mx-auto px-6 py-16 text-center">
         <p class="font-serif text-ink">Atlas 需要 JavaScript 渲染。</p>
         <p class="text-meta mt-2">
-          文本版入口：<a class="text-accent" href={href('/backlog/')}>Backlog</a> 与时间线首页提供同样的信息。
+          同样信息的文本版：
+          <a class="text-accent" href={href('/category/')}>Fields 目录</a>
+          （按领域浏览全部材料）。
         </p>
       </div>
     </noscript>
 
-    <canvas id="atlas-canvas" class="block w-full h-full" role="img" aria-label="知识星图：分类为星系，节点为学习材料"></canvas>
+    <canvas id="atlas-canvas" class="block w-full h-full" role="img" aria-label="知识星图：分类为星系，节点为学习材料（完整文本版见 Fields 目录页）"></canvas>
+
+    <!-- 文本投影（a11y / 无 JS 访客的等价入口） -->
+    <a class="textview text-meta" href={href('/category/')}>text view →</a>
 
     <!-- 图例 + 统计（右上角） -->
     <div class="legend" aria-hidden="true">
@@ -125,6 +130,16 @@ const base = import.meta.env.BASE_URL.replace(/\/+$/, "");
   }
   .ctl input { accent-color: var(--color-accent); }
 
+  .textview {
+    position: absolute;
+    bottom: 12px;
+    left: 16px;
+    color: var(--color-ink-5);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--color-line-2);
+  }
+  .textview:hover { color: var(--color-ink-3); }
+
   .panel {
     position: absolute;
     top: 56px;
@@ -157,6 +172,14 @@ const base = import.meta.env.BASE_URL.replace(/\/+$/, "");
   const ctlTags = document.getElementById('ctl-tags') as HTMLInputElement | null;
   const ctlLearned = document.getElementById('ctl-learned') as HTMLInputElement | null;
   const base = document.querySelector<HTMLElement>('.atlas-wrap')?.dataset.base ?? '';
+
+  // 与 src/lib/url.ts 同源的 slugify（页面脚本无法直接 import 服务端模块时兜底）
+  const slugify = (name: string): string =>
+    name
+      .toLowerCase()
+      .replace(/&/g, ' ')
+      .replace(/[^a-z0-9\u4e00-\u9fff]+/g, '-')
+      .replace(/^-+|-+$/g, '');
 
   const esc = (s: unknown) =>
     String(s ?? '').replace(/[&<>"']/g, (c) => ({
@@ -211,14 +234,20 @@ const base = import.meta.env.BASE_URL.replace(/\/+$/, "");
           return;
         }
         if (node.kind === 'category') {
+          const catUrl = `${base}/category/${node.path
+            .split('/')
+            .map(slugify)
+            .join('/')}/`;
           showPanel(`
             <p class="text-meta m-0">${node.top ? 'field' : 'topic'}</p>
             <h2 class="font-serif text-ink text-xl font-semibold mt-1 mb-2">${esc(node.label)}</h2>
+            <a class="text-ui text-accent no-underline" href="${catUrl}">browse field →</a>
           `);
         } else {
           const statusText = { done: 'learned', learning: 'learning', todo: 'todo' }[node.status] ?? '';
+          const dateText = node.date ? node.date.slice(0, 10) : '';
           showPanel(`
-            <p class="text-meta m-0">${esc(node.type)} · ${esc(statusText)}</p>
+            <p class="text-meta m-0">${esc(node.type)} · ${esc(statusText)}${dateText ? ` · ${esc(dateText)}` : ''}</p>
             <h2 class="font-serif text-ink text-lg font-semibold mt-1 mb-2">${esc(node.label)}</h2>
             <a class="text-ui text-accent no-underline" href="${base}/m/${encodeURIComponent(node.slug)}">view note →</a>
           `);
