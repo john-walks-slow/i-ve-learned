@@ -7,7 +7,7 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   // GitHub Pages project sites live under /<repo>/; keep paths base-aware so a
   // custom domain swap later is a one-line change. See src/lib/url.ts.
-  site: 'https://example.github.io',
+  site: 'https://john-walks-slow.github.io',
   base: '/i-ve-learned',
   trailingSlash: 'never',
   markdown: {
