@@ -1,0 +1,109 @@
+---
+import type { LearnedMaterial } from "../lib/content";
+import {
+  formatDay,
+  formatMinutes,
+  formatPages,
+  TYPE_PLURAL,
+} from "../lib/materials";
+/**
+ * 时间线条目行（计划 §3.1）：
+ * 日期(mono) · 墨点 · 标题(衬线, 链接) · 类型 · 用时/页数 · 标签 · 示例角标
+ * description 存在时弱化随行。
+ */
+import { href } from "../lib/url";
+
+interface Props {
+  item: LearnedMaterial;
+}
+
+const { item } = Astro.props;
+const meta: string[] = [item.type];
+if (item.duration) meta.push(formatMinutes(item.duration));
+if (item.pages) meta.push(formatPages(item.pages));
+---
+
+<article
+  class="entry"
+  data-type={item.type}
+  data-cat={item.category?.[0] ?? 'none'}
+>
+  <span class="when text-meta" aria-hidden="true">{formatDay(item.date)}</span>
+  <span class="dot" aria-hidden="true"></span>
+  <div class="body">
+    <h3 class="m-0 text-[1.0625rem] leading-snug">
+      <a
+        class="font-serif text-ink font-medium no-underline hover:text-accent transition-colors"
+        href={href(`/m/${item.slug}/`)}
+      >{item.title}</a>
+      {item.demo && <span class="badge text-meta" title="演示条目，交付前替换为真实记录">示例</span>}
+      {item.revisit && <span class="badge text-meta" title="值得重读">revisit</span>}
+    </h3>
+    {item.description && (
+      <p class="desc font-serif italic text-ink-4 text-[0.9375rem] mt-1 mb-0">
+        {item.description}
+      </p>
+    )}
+    <p class="meta text-meta m-0 mt-1">
+      {meta.join(' · ')}
+      {item.tags.length > 0 && <span class="tags"> · {item.tags.join(' · ')}</span>}
+    </p>
+  </div>
+  <span class="type text-meta" aria-hidden="true">{TYPE_PLURAL[item.type]}</span>
+</article>
+
+<style>
+  .entry {
+    display: grid;
+    grid-template-columns: 3.25rem 1rem 1fr auto;
+    align-items: baseline;
+    column-gap: 0.5rem;
+    padding: 0.65rem 0;
+  }
+  /* 月度叙事流的呼吸：条目之间用发丝线而非间距堆叠 */
+  .entry + .entry {
+    border-top: 1px solid var(--color-line);
+  }
+
+  .when {
+    font-variant-numeric: tabular-nums;
+    color: var(--color-ink-4);
+  }
+
+  .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: var(--color-ink-2);
+    align-self: center;
+    position: relative;
+    top: -1px;
+  }
+
+  .body { min-width: 0; }
+
+  .badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0 0.375rem;
+    border: 1px solid var(--color-line-2);
+    border-radius: var(--radius-sm);
+    color: var(--color-ink-4);
+    font-size: 0.625rem;
+    line-height: 1.5;
+    vertical-align: 2px;
+  }
+
+  .desc { max-width: 38rem; }
+
+  .meta .tags { color: var(--color-ink-4); }
+
+  .type {
+    color: var(--color-ink-5);
+    font-size: 0.6875rem;
+    display: none;
+  }
+  @media (min-width: 640px) {
+    .type { display: inline; }
+  }
+</style>

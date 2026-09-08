@@ -57,7 +57,9 @@ function materialStatus(m: LearnedMaterial | BacklogMaterial): AtlasStatus {
 /** 时长 → 半径的弱编码（对数感知，克制） */
 function sizeFor(m: LearnedMaterial | BacklogMaterial): number {
   const minutes =
-    ('duration' in m ? m.duration : undefined) ?? ('est' in m ? m.est : undefined) ?? 0;
+    ("duration" in m ? m.duration : undefined) ??
+    ("est" in m ? m.est : undefined) ??
+    0;
   if (minutes <= 0) return 4;
   const s = 4 + Math.log2(1 + minutes / 25);
   return Math.min(9, Math.round(s * 10) / 10);

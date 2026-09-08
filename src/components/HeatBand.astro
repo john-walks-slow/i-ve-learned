@@ -1,0 +1,113 @@
+---
+import type { LearnedMaterial } from "../lib/content";
+import { MONTH_NAMES } from "../lib/materials";
+/**
+ * 12 个月活动热力带（计划 §3.1）：
+ * 十二个月列（piano-roll 式日格），墨色浓度编码当日条目数，
+ * hover 原生 title 提示当日学了什么——零 JS 渐进增强。
+ */
+import { activityByDay } from "../lib/timeline";
+
+interface Props {
+  items: LearnedMaterial[];
+  months?: number;
+}
+
+const { items, months = 12 } = Astro.props;
+const days = activityByDay(items, months);
+
+// 按月分桶（保持序列顺序），并为每个格子准备原生 tooltip
+const byMonth = new Map<
+  string,
+  { date: string; count: number; titles: string }[]
+>();
+const titlesByDate = new Map<string, string[]>();
+for (const item of items) {
+  const key = `${item.date.getFullYear()}-${String(item.date.getMonth() + 1).padStart(2, "0")}-${String(item.date.getDate()).padStart(2, "0")}`;
+  const list = titlesByDate.get(key) ?? [];
+  list.push(item.title);
+  titlesByDate.set(key, list);
+}
+
+const monthKeys: string[] = [];
+const monthBuckets: { date: string; count: number; titles: string }[][] = [];
+for (const day of days) {
+  const mk = day.date.slice(0, 7);
+  let bucket = byMonth.get(mk);
+  if (!bucket) {
+    bucket = [];
+    byMonth.set(mk, bucket);
+    monthKeys.push(mk);
+    monthBuckets.push(bucket);
+  }
+  const titles = titlesByDate.get(day.date) ?? [];
+  bucket.push({
+    ...day,
+    titles: titles.length ? titles.join(" · ") : "",
+  });
+}
+
+const maxCount = Math.max(1, ...days.map((d) => d.count));
+
+/** 浓度分级：0（无）→ 4（当日最多） */
+function level(count: number): number {
+  if (count === 0) return 0;
+  return Math.min(4, Math.ceil((count / maxCount) * 4));
+}
+
+function tooltip(cell: {
+  date: string;
+  count: number;
+  titles: string;
+}): string {
+  const [y, m, d] = cell.date.split("-");
+  const label = `${MONTH_NAMES[Number(m) - 1].slice(0, 3)} ${Number(d)}`;
+  if (cell.count === 0) return `${label} · —`;
+  return `${label} · ${cell.count === 1 ? "1 item" : `${cell.count} items`} — ${cell.titles}`;
+}
+---
+
+<div class="band" role="img" aria-label={`近 ${months} 个月学习活动热力图`}>
+  {monthKeys.map((mk, i) => {
+    const m = mk.split('-')[1];
+    return (
+      <div class="col">
+        <span class="label text-meta">{MONTH_NAMES[Number(m) - 1].slice(0, 3)}</span>
+        {monthBuckets[i].map((cell) => (
+          <span class={`cell lv${level(cell.count)}`} title={tooltip(cell)}></span>
+        ))}
+      </div>
+    );
+  })}
+</div>
+
+<style>
+  .band {
+    display: flex;
+    gap: 3px;
+    align-items: flex-end;
+  }
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+  }
+  .label {
+    font-size: 0.5625rem;
+    letter-spacing: 0.06em;
+    color: var(--color-ink-5);
+    text-align: center;
+    margin-bottom: 2px;
+  }
+  .cell {
+    height: 5px;
+    border-radius: 1px;
+    background: var(--color-line);
+  }
+  .lv1 { background: color-mix(in srgb, var(--color-ink) 18%, transparent); }
+  .lv2 { background: color-mix(in srgb, var(--color-ink) 34%, transparent); }
+  .lv3 { background: color-mix(in srgb, var(--color-ink) 58%, transparent); }
+  .lv4 { background: color-mix(in srgb, var(--color-ink) 82%, transparent); }
+</style>

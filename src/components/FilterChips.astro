@@ -1,0 +1,84 @@
+---
+/**
+ * 筛选 chips（计划 §3.1）：类型 + 顶层分类，带计数。
+ * 渐进增强：无 JS 时隐藏（hidden），增强脚本加载后揭示并接管。
+ * 过滤为 AND 组合（类型 × 分类），单选切换，"all" 复位。
+ */
+import type { LearnedMaterial } from "../lib/content";
+
+interface Props {
+  items: LearnedMaterial[];
+}
+
+const { items } = Astro.props;
+
+const typeCounts = new Map<string, number>();
+const catCounts = new Map<string, number>();
+for (const item of items) {
+  typeCounts.set(item.type, (typeCounts.get(item.type) ?? 0) + 1);
+  const cat = item.category?.[0] ?? "none";
+  catCounts.set(cat, (catCounts.get(cat) ?? 0) + 1);
+}
+const types = [...typeCounts.entries()].sort((a, b) => b[1] - a[1]);
+const cats = [...catCounts.entries()].sort((a, b) => b[1] - a[1]);
+---
+
+<div id="filters" class="filters" hidden>
+  <div class="group" role="group" aria-label="filter by type">
+    <button class="chip text-meta is-active" data-kind="type" data-value="all">all</button>
+    {types.map(([type, count]) => (
+      <button class="chip text-meta" data-kind="type" data-value={type}>
+        {type}<span class="count">{count}</span>
+      </button>
+    ))}
+  </div>
+  <div class="group" role="group" aria-label="filter by field">
+    <button class="chip text-meta is-active" data-kind="cat" data-value="all">all</button>
+    {cats.map(([cat, count]) => (
+      <button class="chip text-meta" data-kind="cat" data-value={cat}>
+        {cat}<span class="count">{count}</span>
+      </button>
+    ))}
+  </div>
+  <p class="summary text-meta m-0" id="filter-summary" aria-live="polite"></p>
+</div>
+
+<style>
+  .filters {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+  }
+  .group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+    align-items: center;
+  }
+  .chip {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.03em;
+    padding: 0.125rem 0.5rem;
+    border: 1px solid var(--color-line-2);
+    border-radius: var(--radius-full, 999px);
+    background: transparent;
+    color: var(--color-ink-4);
+    cursor: pointer;
+    transition: color 0.15s var(--ease-snap), border-color 0.15s var(--ease-snap),
+      background-color 0.15s var(--ease-snap);
+  }
+  .chip:hover { color: var(--color-ink-2); border-color: var(--color-ink-5); }
+  .chip.is-active {
+    color: var(--color-paper);
+    background: var(--color-ink-2);
+    border-color: var(--color-ink-2);
+  }
+  .chip .count {
+    margin-left: 0.3em;
+    color: inherit;
+    opacity: 0.55;
+  }
+  .summary { color: var(--color-ink-5); font-size: 0.6875rem; }
+</style>

@@ -1,20 +1,127 @@
 ---
+import FilterChips from "../components/FilterChips.astro";
+import HeatBand from "../components/HeatBand.astro";
+import TimelineEntry from "../components/TimelineEntry.astro";
 import Base from "../layouts/Base.astro";
 import { getBacklog, getLearned } from "../lib/content";
+import { MONTH_NAMES } from "../lib/materials";
 import { computeStats } from "../lib/stats";
+import { groupByMonth } from "../lib/timeline";
+import { href } from "../lib/url";
 
 const learned = await getLearned();
 const backlog = await getBacklog();
 const stats = computeStats(learned, backlog);
+const years = groupByMonth(learned);
 ---
 
 <Base>
-  <section class="pt-16 pb-8">
-    <h1 class="font-serif text-ink text-3xl font-semibold m-0">What I’ve Learned</h1>
-    <p class="text-meta mt-3">
-      {stats.learnedCount} learned · {stats.hours}h · {stats.fields} fields · now learning:
-      {stats.nowLearning}
+  <section class="pt-14 pb-10">
+    <!-- 站点自述（衬线，编辑感） -->
+    <h1 class="font-serif text-ink text-[1.75rem] leading-tight font-semibold m-0">
+      读过的、看完的、动手写下来的，
+      <br class="hidden sm:block" />
+      都落进两个 markdown 目录里。
+    </h1>
+
+    <!-- 数据行（mono）：now 链到待学页 -->
+    <p class="stats text-meta mt-4 m-0">
+      {stats.learnedCount} learned ·
+      {stats.hours >= 10 ? Math.round(stats.hours) : stats.hours}h · {stats.fields} fields ·
+      <a class="now text-accent" href={href('/backlog/')}>now: {stats.nowLearning}</a>
     </p>
-    <p class="font-serif italic text-ink-4 mt-4">M1 管线占位页——时间线首页在 M2 落地。</p>
+
+    <!-- 12 个月活动热力带 -->
+    <div class="mt-6">
+      <HeatBand items={learned} />
+    </div>
+
+    <!-- 筛选 chips（增强脚本加载后可见） -->
+    <FilterChips items={learned} />
+  </section>
+
+  <!-- 年份锚点（多年时显示） -->
+  {years.length > 1 && (
+    <nav class="year-nav text-meta mb-2" aria-label="jump to year">
+      {years.map((y) => (
+        <a href={`#y${y.year}`}>{y.year}</a>
+      ))}
+    </nav>
+  )}
+
+  <!-- 时间线主体：年 → 月 → 条目 -->
+  <section class="pb-16">
+    {years.map((year) => (
+      <div class="year" data-group="year" id={`y${year.year}`}>
+        <h2 class="year-label m-0">
+          <span class="font-serif text-ink text-xl font-semibold">{year.year}</span>
+        </h2>
+        {year.months.map((month) => (
+          <div class="month" data-group="month">
+            <h3 class="month-label text-meta m-0">
+              {MONTH_NAMES[month.month]}
+              <span class="count">{month.items.length}</span>
+            </h3>
+            <div class="entries">
+              {month.items.map((item) => (
+                <TimelineEntry item={item} />
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    ))}
+    {years.length === 0 && (
+      <p class="font-serif italic text-ink-4">还没有记录——content/learned/ 里放着第一个笔记。</p>
+    )}
   </section>
 </Base>
+
+<style>
+  .stats { font-size: 0.8125rem; }
+  .now { text-decoration: none; }
+  .now:hover { text-decoration: underline; }
+
+  .year-nav {
+    display: flex;
+    gap: 1rem;
+    border-top: 1px solid var(--color-line);
+    padding-top: 0.75rem;
+  }
+  .year-nav a {
+    color: var(--color-ink-4);
+    text-decoration: none;
+  }
+  .year-nav a:hover { color: var(--color-ink-2); }
+
+  .year { padding-top: 2rem; }
+  .year-label {
+    border-bottom: 1px solid var(--color-ink-4);
+    padding-bottom: 0.5rem;
+  }
+
+  .month { margin-top: 1.75rem; }
+  .month-label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--color-ink-3);
+  }
+  .month-label .count {
+    margin-left: 0.5em;
+    color: var(--color-ink-5);
+  }
+
+  .entries {
+    margin-top: 0.25rem;
+  }
+</style>
+
+<script>
+  // 首屏零阻塞：load 后动态导入增强脚本（筛选 + 滚动 reveal）
+  addEventListener('load', () => {
+    import('../scripts/timeline-enhance')
+      .then(({ enhance }) => enhance())
+      .catch((err) => console.error('[timeline]', err));
+  });
+</script>
