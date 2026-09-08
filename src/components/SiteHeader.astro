@@ -45,6 +45,21 @@ const links = [
           </li>
         ))
       }
+      <li class="hidden sm:block ml-2" aria-hidden="true">
+        <span class="ck-hint-key">⌘K</span>
+      </li>
     </ul>
   </nav>
 </header>
+
+<style>
+  .ck-hint-key {
+    font-family: var(--font-mono);
+    font-size: 0.625rem;
+    color: var(--color-ink-5);
+    border: 1px solid var(--color-line-2);
+    border-radius: var(--radius-sm);
+    padding: 0.125rem 0.375rem;
+    user-select: none;
+  }
+</style>

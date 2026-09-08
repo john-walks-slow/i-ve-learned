@@ -1,0 +1,203 @@
+---
+import { TOP_ORDER } from "../data/categories";
+/**
+ * 待学清单 /backlog（计划 §3.3）。
+ * 正在学置顶（琥珀点缀）→ 分类分组（why 优先展示）→ 防腐烂提示。
+ */
+import Base from "../layouts/Base.astro";
+import type { BacklogMaterial } from "../lib/content";
+import { getBacklog, getLearned } from "../lib/content";
+import { agoLabel, formatMinutes, silentMonthsSince } from "../lib/materials";
+import { computeStats } from "../lib/stats";
+import { href } from "../lib/url";
+
+const backlog = await getBacklog();
+const learned = await getLearned();
+const stats = computeStats(learned, backlog);
+
+const learning = backlog.filter((m) => m.status === "learning");
+const waiting = backlog.filter((m) => m.status === "todo");
+
+const oldest = backlog.reduce<number | null>(
+  (acc, m) => (acc === null || m.date.getTime() < acc ? m.date.getTime() : acc),
+  null,
+);
+// 计划文案：`oldest 5 months`（不带 ago）
+const oldestLabel = oldest
+  ? agoLabel(new Date(oldest)).replace(" ago", "")
+  : "—";
+
+// 按顶层分类分组（注册表顺序 = Map 插入顺序）
+const groups = [...TOP_ORDER.keys()]
+  .map((top) => ({
+    top,
+    items: waiting.filter((m) => m.category?.[0] === top),
+  }))
+  .filter((g) => g.items.length > 0);
+const uncategorized = waiting.filter(
+  (m) => !m.category || m.category.length === 0,
+);
+
+/** 静默 >6 个月 → "还想学吗" */
+function isStale(m: BacklogMaterial): boolean {
+  return silentMonthsSince(m.date, m.updated) > 6;
+}
+---
+
+<Base title="Backlog" description="想学的东西，与它们等的月数">
+  <section class="pt-12 pb-4">
+    <h1 class="font-serif text-ink text-2xl font-semibold m-0">Backlog</h1>
+    <p class="text-meta mt-2 m-0">
+      {stats.waiting} waiting · ~{Math.round(stats.waitingHours)}h estimated · oldest {oldestLabel}
+      <span class="sep">·</span>
+      <span class="lit">今年已点亮 {stats.thisYear}</span>
+    </p>
+  </section>
+
+  <!-- 正在学（置顶） -->
+  {learning.length > 0 && (
+    <section class="now mt-6" aria-label="正在学">
+      <h2 class="sec-label m-0">
+        <span class="pulse" aria-hidden="true"></span>now learning
+      </h2>
+      <div class="mt-3 flex flex-col">
+        {learning.map((m) => (
+          <article class="row now-row">
+            <h3 class="m-0 text-[1.0625rem] leading-snug">
+              <a
+                class="font-serif text-ink font-medium no-underline hover:text-accent transition-colors"
+                href={href(`/m/${m.slug}/`)}
+              >{m.title}</a>
+              {m.demo && <span class="badge text-meta">示例</span>}
+            </h3>
+            {m.why && <p class="why font-serif italic text-ink-4 text-sm m-0 mt-1">{m.why}</p>}
+            <p class="text-meta m-0 mt-1">
+              {m.type} · ~{m.est ? formatMinutes(m.est) : '?'} · {m.category?.join(' / ') ?? '—'}
+            </p>
+          </article>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- 待学：分类分组 -->
+  {groups.map((g) => (
+    <section class="group mt-8">
+      <h2 class="sec-label m-0">{g.top}</h2>
+      <div class="mt-3 flex flex-col">
+        {g.items.map((m) => (
+          <article class:list={['row', { stale: isStale(m) }]}>
+            <h3 class="m-0 text-[1.0625rem] leading-snug">
+              <a
+                class="font-serif text-ink font-medium no-underline hover:text-accent transition-colors"
+                href={href(`/m/${m.slug}/`)}
+              >{m.title}</a>
+              {m.demo && <span class="badge text-meta">示例</span>}
+            </h3>
+            {m.why && <p class="why font-serif italic text-ink-4 text-sm m-0 mt-1">{m.why}</p>}
+            <p class="text-meta m-0 mt-1">
+              {m.type} · ~{m.est ? formatMinutes(m.est) : '?'}
+              {m.category?.[1] && ` · ${m.category[1]}`}
+              <span class="ago"> · 加入于 {agoLabel(m.date)}</span>
+              {isStale(m) && <span class="ask"> · 还想学吗？</span>}
+            </p>
+          </article>
+        ))}
+      </div>
+    </section>
+  ))}
+
+  {uncategorized.length > 0 && (
+    <section class="group mt-8">
+      <h2 class="sec-label m-0">unsorted</h2>
+      <div class="mt-3 flex flex-col">
+        {uncategorized.map((m) => (
+          <article class="row">
+            <h3 class="m-0 text-[1.0625rem] leading-snug">
+              <a
+                class="font-serif text-ink font-medium no-underline hover:text-accent transition-colors"
+                href={href(`/m/${m.slug}/`)}
+              >{m.title}</a>
+            </h3>
+            {m.why && <p class="why font-serif italic text-ink-4 text-sm m-0 mt-1">{m.why}</p>}
+          </article>
+        ))}
+      </div>
+    </section>
+  )}
+
+  {backlog.length === 0 && (
+    <p class="font-serif italic text-ink-4 mt-8">待学清单是空的——去 content/backlog/ 放一个想法。</p>
+  )}
+
+  <p class="howto text-meta mt-10 mb-16">
+    学完一项 = <code>git mv content/backlog/xx.md content/learned/</code>，链接不变。
+  </p>
+</Base>
+
+<style>
+  .sep { margin: 0 0.5rem; color: var(--color-ink-5); }
+  .lit { color: var(--color-accent); }
+
+  .sec-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--color-ink-3);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  /* 正在学的呼吸点：唯一的动效点缀（尊重 reduced-motion） */
+  .pulse {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-accent);
+    animation: pulse 2.4s var(--ease-snap) infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.35; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pulse { animation: none; }
+  }
+
+  .row + .row {
+    border-top: 1px solid var(--color-line);
+    padding-top: 0.75rem;
+  }
+  .row { padding-bottom: 0.75rem; }
+
+  .now-row {
+    border-left: 2px solid var(--color-accent);
+    padding-left: 1rem;
+  }
+
+  .badge {
+    display: inline-block;
+    margin-left: 0.5rem;
+    padding: 0 0.375rem;
+    border: 1px solid var(--color-line-2);
+    border-radius: var(--radius-sm);
+    color: var(--color-ink-4);
+    font-size: 0.625rem;
+    line-height: 1.5;
+    vertical-align: 2px;
+  }
+
+  .ago { color: var(--color-ink-5); }
+  .stale h3 a { color: var(--color-ink-3); }
+  .stale .ask { color: var(--color-ink-5); font-style: italic; }
+
+  .howto code {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    background: var(--color-line);
+    border-radius: 3px;
+    padding: 0.1em 0.35em;
+  }
+</style>
