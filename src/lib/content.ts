@@ -33,6 +33,7 @@ export interface BacklogMaterial extends MaterialCommon {
   est?: number;
   why?: string;
   status: "todo" | "learning";
+  updated?: Date;
 }
 
 type LearnedEntry = CollectionEntry<"learned">;
@@ -79,7 +80,15 @@ function toBacklog(entry: BacklogEntry): BacklogMaterial {
     est: d.est,
     why: d.why,
     status: d.status,
+    updated: d.updated,
   };
+}
+
+/** 判别联合：status 只在 BacklogMaterial 上（必填） */
+export function isBacklog(
+  m: LearnedMaterial | BacklogMaterial,
+): m is BacklogMaterial {
+  return "status" in m;
 }
 
 /** 全部已学（排除草稿），按学完日期倒序 */

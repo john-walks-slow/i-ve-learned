@@ -82,6 +82,8 @@ export const backlogSchema = baseMaterialSchema.extend({
     .optional(),
   why: z.string().max(300).optional(),
   status: z.enum(["todo", "learning"]).default("todo"),
+  /** 最近还碰过（推迟"还想学吗"的静默计时；如重读笔记、写了提纲） */
+  updated: z.coerce.date().optional(),
 });
 
 export type LearnedData = z.output<typeof learnedSchema>;

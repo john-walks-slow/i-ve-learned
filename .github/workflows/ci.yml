@@ -25,7 +25,9 @@ jobs:
       - run: pnpm lint
 
       # 2. 类型检查 + schema 校验（脏数据在此拦截）
-      - run: printf 'y\n' | pnpm exec astro check
+      # 先 sync 生成 .astro/types.d.ts（首次运行的类型竞态会让 check 误报）
+      - run: pnpm exec astro sync
+      - run: pnpm exec astro check
 
       # 3. 构建
       - run: pnpm build

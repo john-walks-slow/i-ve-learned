@@ -1,5 +1,6 @@
 ---
 import type { BacklogMaterial, LearnedMaterial } from "../lib/content";
+import { isBacklog } from "../lib/content";
 import { formatMinutes, formatPages } from "../lib/materials";
 /**
  * 分类页/标签页的紧凑条目行（计划 §3.5，一个模板族复用）。
@@ -12,12 +13,15 @@ interface Props {
 }
 
 const { item } = Astro.props;
-const isLearned = "duration" in item;
 const meta: string[] = [item.type];
-if (isLearned && item.duration) meta.push(formatMinutes(item.duration));
-if (!isLearned && item.est) meta.push(formatMinutes(item.est));
-if (item.pages) meta.push(formatPages(item.pages));
-if (!isLearned) meta.push(item.status === "learning" ? "learning" : "todo");
+if (isBacklog(item)) {
+  if (item.est) meta.push(formatMinutes(item.est));
+  if (item.pages) meta.push(formatPages(item.pages));
+  meta.push(item.status === "learning" ? "learning" : "todo");
+} else {
+  if (item.duration) meta.push(formatMinutes(item.duration));
+  if (item.pages) meta.push(formatPages(item.pages));
+}
 ---
 
 <article class="row" data-type={item.type}>

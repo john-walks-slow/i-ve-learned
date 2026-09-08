@@ -7,7 +7,7 @@ import { CATEGORIES } from "../../data/categories";
 import Base from "../../layouts/Base.astro";
 import type { BacklogMaterial, LearnedMaterial } from "../../lib/content";
 import { getBacklog, getLearned } from "../../lib/content";
-import { href } from "../../lib/url";
+import { href, slugify } from "../../lib/url";
 
 const learned = await getLearned();
 const backlog = await getBacklog();
@@ -17,6 +17,7 @@ const fields = CATEGORIES.map((def) => {
   const items = pool.filter((m) => m.category?.[0] === def.name);
   return {
     name: def.name,
+    slug: slugify(def.name),
     note: def.note,
     count: items.length,
     hours: Math.round(
@@ -28,6 +29,7 @@ const fields = CATEGORIES.map((def) => {
     ),
     children: (def.children ?? []).map((child) => ({
       name: child,
+      slug: slugify(child),
       count: pool.filter(
         (m) => m.category?.join("/") === `${def.name}/${child}`,
       ).length,

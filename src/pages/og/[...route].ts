@@ -28,7 +28,7 @@ pages._site = {
 
 export const { getStaticPaths, GET } = await OGImageRoute({
   pages,
-  param: "route",
+  // param 名由文件名 [...route] 自动推导（0.13.1 起 param 选项已移除）
   getImageOptions: (_path, page) => ({
     title: page.title,
     description: page.description ?? "",
