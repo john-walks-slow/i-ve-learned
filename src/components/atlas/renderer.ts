@@ -156,7 +156,10 @@ export class AtlasRenderer {
   private bindEvents(): void {
     const c = this.canvas;
 
-    const onResize = () => this.resize();
+    const onResize = () => {
+      this.resize();
+      if (!this.userAdjusted) this.fitToViewport(0.82);
+    };
     const ro = new ResizeObserver(onResize);
     ro.observe(c);
     this.cleanupFns.push(() => ro.disconnect());
@@ -209,6 +212,7 @@ export class AtlasRenderer {
       const dx = e.clientX - this.lastPointer.x;
       const dy = e.clientY - this.lastPointer.y;
       if (Math.abs(dx) + Math.abs(dy) > 2) this.dragMoved = true;
+      this.userAdjusted = true;
       this.cam.x -= dx / this.cam.zoom;
       this.cam.y -= dy / this.cam.zoom;
       this.lastPointer = { x: e.clientX, y: e.clientY };
@@ -259,6 +263,7 @@ export class AtlasRenderer {
   };
 
   private zoomAt(clientX: number, clientY: number, factor: number): void {
+    this.userAdjusted = true;
     const rect = this.canvas.getBoundingClientRect();
     const px = clientX - rect.left - this.width / 2;
     const py = clientY - rect.top - this.height / 2;
@@ -329,6 +334,9 @@ export class AtlasRenderer {
   }
 
   /* ---------------- 绘制 ---------------- */
+
+  /** 用户手动缩放/平移过则不再自动重适配（旋转屏尊重用户视角） */
+  private userAdjusted = false;
 
   private resize(): void {
     const rect = this.canvas.getBoundingClientRect();
