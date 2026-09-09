@@ -20,6 +20,7 @@ for (const item of items) {
 const cats = [...catCounts.entries()].sort((a, b) => b[1] - a[1]);
 ---
 
+{items.length > 0 && (
 <div id="filters" class="filters" hidden>
   <div class="group" role="group" aria-label="filter by field">
     <button class="chip text-meta is-active" data-kind="cat" data-value="all">all</button>
@@ -29,8 +30,8 @@ const cats = [...catCounts.entries()].sort((a, b) => b[1] - a[1]);
       </button>
     ))}
   </div>
-  <p class="summary text-meta m-0" id="filter-summary" aria-live="polite"></p>
 </div>
+)}
 
 <style>
   .filters {
@@ -69,5 +70,4 @@ const cats = [...catCounts.entries()].sort((a, b) => b[1] - a[1]);
     color: inherit;
     opacity: 0.55;
   }
-  .summary { color: var(--color-ink-5); font-size: 0.6875rem; }
 </style>

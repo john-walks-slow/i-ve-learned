@@ -16,6 +16,7 @@ function learned(
     tags: [],
     revisit: false,
     hasBody: false,
+    noteType: "note",
     demo: false,
     ...over,
   };
@@ -33,6 +34,7 @@ function backlog(
     tags: [],
     revisit: false,
     hasBody: false,
+    noteType: "note",
     demo: false,
     status: "todo",
     ...over,

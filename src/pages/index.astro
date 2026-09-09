@@ -16,17 +16,15 @@ const years = groupByMonth(learned);
 ---
 
 <Base>
-  <section class="pt-14 pb-10">
-    <h1 class="font-serif text-ink text-[1.75rem] leading-tight font-semibold m-0">
-      学习记录
-    </h1>
-
-    <!-- 数据行（mono）：now 链到待学页 -->
-    <p class="stats text-meta mt-4 m-0">
+  <section class="pt-14 pb-4">
+    <!-- 数据行（mono）：now 链到待学页（还没有记录时整行隐藏） -->
+    {stats.learnedCount > 0 && (
+    <p class="stats text-meta m-0">
       {stats.learnedCount} learned ·
       {stats.hours >= 10 ? Math.round(stats.hours) : stats.hours}h · {stats.fields} fields ·
       <a class="now text-accent" href={href('/backlog/')} title="backlog 中标记 status: learning 的条目">now: {stats.nowLearning}</a>
     </p>
+    )}
 
     <!-- 12 个月活动热力带 -->
     <div class="mt-6">
@@ -70,7 +68,7 @@ const years = groupByMonth(learned);
   .now { text-decoration: none; }
   .now:hover { text-decoration: underline; }
 
-  .year { padding-top: 2rem; }
+  .year { padding-top: 1.25rem; }
   .year-label {
     border-bottom: 1px solid var(--color-ink-4);
     padding-bottom: 0.5rem;

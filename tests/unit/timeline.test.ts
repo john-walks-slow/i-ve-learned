@@ -11,6 +11,7 @@ function m(slug: string, iso: string): LearnedMaterial {
     tags: [],
     revisit: false,
     hasBody: false,
+    noteType: "note",
     demo: false,
   };
 }

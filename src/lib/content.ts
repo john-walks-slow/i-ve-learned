@@ -16,6 +16,8 @@ export interface MaterialCommon {
   comment?: string;
   /** 正文笔记是否存在（决定列表页 note → 链接） */
   hasBody: boolean;
+  /** 正文类型（按钮文案，默认 note） */
+  noteType: string;
   url?: string;
   tags: string[];
   pages?: number;
@@ -50,6 +52,7 @@ function toLearned(entry: LearnedEntry): LearnedMaterial {
     category: d.category,
     comment: d.comment,
     hasBody: Boolean(entry.body && entry.body.trim().length > 0),
+    noteType: d.noteType,
     url: d.url,
     tags: d.tags,
     pages: d.pages,
@@ -72,6 +75,7 @@ function toBacklog(entry: BacklogEntry): BacklogMaterial {
     category: d.category,
     comment: d.comment,
     hasBody: Boolean(entry.body && entry.body.trim().length > 0),
+    noteType: d.noteType,
     url: d.url,
     tags: d.tags,
     pages: d.pages,

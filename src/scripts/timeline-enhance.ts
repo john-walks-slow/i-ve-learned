@@ -1,6 +1,6 @@
 /**
  * 时间线增强脚本（动态加载，无 JS 时完整列表可读）：
- * 1. 揭示筛选 chips 并接管点击（类型 × 分类 AND 组合，"all" 复位）
+ * 1. 揭示筛选 chips 并接管点击（分类单选，"all" 复位）
  * 2. 空月份/空年份自动收起
  * 3. 滚动进场 reveal（8px 上移 + 淡入，300ms；reduced-motion 跳过）
  */
@@ -13,20 +13,17 @@ interface FilterState {
 export function enhance(): void {
   const filters = document.getElementById("filters");
   const entries = [...document.querySelectorAll<HTMLElement>(".entry")];
-  const summary = document.getElementById("filter-summary");
   if (!filters || entries.length === 0) return;
 
   const groups = [...document.querySelectorAll<HTMLElement>("[data-group]")];
   const state: FilterState = { type: "all", cat: "all" };
 
   const apply = (): void => {
-    let visible = 0;
     for (const entry of entries) {
       const ok =
         (state.type === "all" || entry.dataset.type === state.type) &&
         (state.cat === "all" || entry.dataset.cat === state.cat);
       entry.hidden = !ok;
-      if (ok) visible++;
     }
     // 收起空组
     for (const group of groups) {
@@ -34,12 +31,6 @@ export function enhance(): void {
         ...group.querySelectorAll<HTMLElement>(".entry"),
       ].some((e) => !e.hidden);
       group.hidden = !hasVisible;
-    }
-    if (summary) {
-      summary.textContent =
-        visible === entries.length
-          ? `${entries.length} items`
-          : `${visible} / ${entries.length} items`;
     }
   };
 

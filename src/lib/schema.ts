@@ -36,6 +36,8 @@ export const baseMaterialSchema = z.object({
     }),
   /** 个人短评（列表页随行；区别于正文笔记 body） */
   comment: z.string().max(300).optional(),
+  /** 正文类型（时间线 note → 按钮文案）：note | translation | fulltext | … */
+  noteType: z.string().max(24).default("note"),
   url: z
     .url()
     .refine((u) => /^https?:\/\//.test(u), "url 需以 http(s):// 开头")

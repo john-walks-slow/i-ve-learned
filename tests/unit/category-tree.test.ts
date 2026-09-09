@@ -20,6 +20,7 @@ function m(
     tags,
     revisit: false,
     hasBody: false,
+    noteType: "note",
     demo: false,
   };
 }

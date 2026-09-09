@@ -42,3 +42,15 @@ biome 0 · astro check 0 错 · vitest 43/43 · build 118 页 · budgets 6/6（�
 4. 时间线 meta 首位 = 分类完整路径链接（dotted underline；无分类条目从用时开始）
 
 门禁复核：biome 0 · astro check 0 · vitest 43 · build 118 · budgets 6 · e2e 7；浏览器双重视觉验证通过。
+
+## 第三轮反馈（同日追加）
+
+1. `noteType` frontmatter 字段（默认 note；translation/fulltext/自定义）驱动时间线按钮文案；按钮移到右列第二行（媒体类型下方），meta 行只留分类/用时/标签
+2. 删除 "x/22 items" 计数行（FilterChips 去 summary + enhance 脚本同步）；空内容时 chips 不渲染
+3. 首页删「学习记录」h1；chips 与列表间距收紧（year pt 2rem→1.25rem、hero pb 10→4）；空内容时统计行隐藏
+4. 清空全部 30 个 demo 占位条目（保留 _template.md）——真实内容回填开始
+   - 排障：Astro data store 缓存已删条目 → `rm -rf .astro node_modules/.astro` 后 118 页→28 页
+   - e2e 重写为内容无关的空态冒烟（5 用例），回填真实内容后依然成立
+   - ⌘K 默认列表/搜索行为已验证（atlas 精确命中 1）
+
+门禁复核：biome 0 · astro check 0 · vitest 43 · build 28 页（空内容）· budgets 6 · e2e 5；临时条目实测 noteType 渲染 + 空态双重视觉验证。
