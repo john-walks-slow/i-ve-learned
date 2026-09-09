@@ -3,7 +3,7 @@ title: "React Compiler 深度解析"
 type: article
 date: 2026-08-12
 category: [Frontend, Frameworks]
-description: 自动 memoization 时代的前端性能心智。
+comment: 自动 memoization 时代的前端性能心智。
 url: https://react.dev/learn/react-compiler
 tags: [react, compiler, performance]
 est: 90

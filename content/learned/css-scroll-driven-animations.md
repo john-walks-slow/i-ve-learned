@@ -3,11 +3,10 @@ title: "CSS scroll-driven animations（Chrome 115+）"
 type: doc
 date: 2026-03-22
 category: [Frontend, Rendering]
-description: 滚动进度条、揭示动画——不再需要一行 JS 或 scroll 监听。
+comment: 滚动进度条、揭示动画——不再需要一行 JS 或 scroll 监听。
 url: https://developer.chrome.com/docs/css-ui/scroll-driven-animations
 tags: [css, animation, performance]
 duration: 45
-rating: 4
 demo: true
 ---
 

@@ -3,13 +3,12 @@ title: "Attention Is All You Need"
 type: paper
 date: 2026-04-22
 category: [ML, LLM]
-description: Transformer 原论文。QKV 的物理直觉：一次可微分的数据库查询。
+comment: Transformer 原论文。QKV 的物理直觉：一次可微分的数据库查询。
 url: https://arxiv.org/abs/1706.03762
 tags: [transformer, attention]
 duration: 150
 pages: 15
 source: "Vaswani et al., NeurIPS 2017"
-rating: 5
 demo: true
 ---
 

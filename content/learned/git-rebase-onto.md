@@ -3,10 +3,9 @@ title: "git rebase --onto 的正确用法"
 type: snippet
 date: 2026-05-18
 category: [Engineering, DevOps]
-description: 把一段提交从一个基底搬到另一个基底，三参数顺序终于记住了。
+comment: 把一段提交从一个基底搬到另一个基底，三参数顺序终于记住了。
 tags: [git]
 duration: 10
-rating: 3
 demo: true
 ---
 

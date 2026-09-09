@@ -3,11 +3,10 @@ title: "Gwern: Design Of This Website"
 type: article
 date: 2026-04-18
 category: [Design, Interaction]
-description: 一个人十六年打磨一个网站的四条设计原则。
+comment: 一个人十六年打磨一个网站的四条设计原则。
 url: https://gwern.net/design
 tags: [typography, web-design, principles]
 duration: 60
-rating: 5
 revisit: true
 demo: true
 ---

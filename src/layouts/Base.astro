@@ -47,32 +47,36 @@ const ogDescription =
     </main>
     <SiteFooter />
     <script>
-      // ⌘K / Ctrl+K：首次按键才加载面板 + minisearch + 索引（首屏零成本）
+      // ⌘K / Ctrl+K 或点击导航栏徽章：首次触发才加载面板 + minisearch + 索引
       let palette: typeof import("../scripts/command-palette") | null = null;
       let loading = false;
+      function openPalette(): void {
+        if (!palette && !loading) {
+          loading = true;
+          import("../scripts/command-palette")
+            .then(async (mod) => {
+              palette = mod;
+              await mod.ensurePalette();
+              mod.openPalette();
+            })
+            .catch((err) => {
+              // 加载失败允许下次重试（loading 复位）
+              loading = false;
+              console.error("[palette]", err);
+            });
+        } else if (palette) {
+          palette.openPalette();
+        }
+      }
       document.addEventListener("keydown", (e) => {
         if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
           e.preventDefault();
-          if (!palette && !loading) {
-            loading = true;
-            import("../scripts/command-palette")
-              .then(async (mod) => {
-                palette = mod;
-                await mod.ensurePalette();
-                mod.openPalette();
-              })
-              .catch((err) => {
-                // 加载失败允许下次重试（loading 复位）
-                loading = false;
-                console.error("[palette]", err);
-              });
-          } else if (palette) {
-            palette.openPalette();
-          }
+          openPalette();
         } else if (e.key === "Escape" && palette) {
           palette.closePalette();
         }
       });
+      document.getElementById("ck-trigger")?.addEventListener("click", openPalette);
     </script>
   </body>
 </html>

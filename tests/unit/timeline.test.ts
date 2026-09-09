@@ -10,6 +10,7 @@ function m(slug: string, iso: string): LearnedMaterial {
     date: new Date(iso),
     tags: [],
     revisit: false,
+    hasBody: false,
     demo: false,
   };
 }

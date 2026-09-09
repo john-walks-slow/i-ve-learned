@@ -3,11 +3,10 @@ title: "Astro Content Collections 源码阅读"
 type: doc
 date: 2026-06-25
 category: [Frontend, Frameworks]
-description: glob loader 怎么把 markdown 目录变成类型安全的数据层。
+comment: glob loader 怎么把 markdown 目录变成类型安全的数据层。
 url: https://docs.astro.build/en/guides/content-collections/
 tags: [astro, static-site, typescript]
 duration: 90
-rating: 4
 demo: true
 ---
 

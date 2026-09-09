@@ -9,6 +9,7 @@ import MiniSearch from "minisearch";
 interface SearchItem {
   g: string;
   label: string;
+  slug?: string;
   href: string;
   k?: string;
 }
@@ -46,7 +47,7 @@ export async function ensurePalette(): Promise<void> {
     const res = await fetch(`${base}/search-index.json`);
     items = (await res.json()) as SearchItem[];
     miniSearch = new MiniSearch({
-      idField: "href", // href 全局唯一，免造自增 id
+      idField: "slug", // slug 唯一；href 可能是共享的原文外链（同书分章）
       fields: ["label", "k"],
       storeFields: ["g", "label", "href"],
       searchOptions: { prefix: true, fuzzy: 0.2, boost: { label: 2 } },
@@ -82,10 +83,16 @@ export function moveSelection(delta: number): void {
 
 export function gotoActive(): void {
   const item = rendered[activeIndex];
-  if (item) window.location.assign(withBase(item.href));
+  if (!item) return;
+  const url = withBase(item.href);
+  // 外链（原材料）开新标签页，站内链接当前页跳转
+  if (/^https?:\/\//.test(url)) window.open(url, "_blank", "noopener");
+  else window.location.assign(url);
 }
 
 function withBase(path: string): string {
+  // 外链（原材料）直通，不拼 base
+  if (/^https?:\/\//.test(path)) return path;
   const base = document.documentElement.dataset.base?.replace(/\/+$/, "") ?? "";
   return path === "/" ? `${base}/` : `${base}${path}`;
 }
@@ -134,8 +141,12 @@ function renderResults(query: string): void {
     for (const item of group) {
       const active = idx === activeIndex ? " is-active" : "";
       const safe = escapeHtml(item.label);
-      const safeHref = escapeHtml(withBase(item.href));
-      html += `<li><a class="item${active}" data-idx="${idx}" href="${safeHref}">${safe}</a></li>`;
+      const url = withBase(item.href);
+      const safeHref = escapeHtml(url);
+      const ext = /^https?:\/\//.test(url)
+        ? ' target="_blank" rel="noopener noreferrer"'
+        : "";
+      html += `<li><a class="item${active}" data-idx="${idx}" href="${safeHref}"${ext}>${safe}</a></li>`;
       idx++;
     }
   }

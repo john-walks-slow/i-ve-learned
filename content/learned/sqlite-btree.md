@@ -3,11 +3,10 @@ title: "SQLite 是怎么存数据的：B-tree 页与自由块"
 type: blog
 date: 2026-08-02
 category: [Systems, Storage]
-description: 读完 DDIA 第 9 章后的落地练习：用 hexdump 看 sqlite 文件的页结构。
+comment: 读完 DDIA 第 9 章后的落地练习：用 hexdump 看 sqlite 文件的页结构。
 url: https://www.sqlite.org/fileformat2.html
 tags: [sqlite, b-tree, storage]
 duration: 90
-rating: 4
 demo: true
 ---
 

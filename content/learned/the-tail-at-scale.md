@@ -3,13 +3,12 @@ title: "The Tail at Scale"
 type: paper
 date: 2026-09-02
 category: [Systems, Distributed]
-description: 尾延迟不是平均值问题，是百分位问题——一台慢机器足以拖垮整个服务。
+comment: 尾延迟不是平均值问题，是百分位问题——一台慢机器足以拖垮整个服务。
 url: https://research.google/pubs/the-tail-at-scale/
 tags: [latency, p99, scheduling]
 duration: 45
 pages: 12
 source: "Jeff Dean & Luiz Barroso, CACM 2013"
-rating: 5
 revisit: true
 demo: true
 ---

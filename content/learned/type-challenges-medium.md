@@ -3,11 +3,10 @@ title: "type-challenges: Medium 前 20 题"
 type: project
 date: 2026-06-28
 category: [Language, TypeScript]
-description: 条件类型 + infer + 递归的肌肉训练。
+comment: 条件类型 + infer + 递归的肌肉训练。
 url: https://github.com/type-challenges/type-challenges
 tags: [typescript, type-level]
 duration: 420
-rating: 4
 demo: true
 ---
 

@@ -5,13 +5,12 @@ title: ""
 type: article # article/video/paper/blog/book/course/doc/talk/podcast/project/snippet
 date: 2026-09-08 # 学完日期
 category: [] # 多级路径，如 [Systems, Distributed]；必须在 src/data/categories.ts 注册
-description: "" # 一句话简介（可选）
+comment: "" # 个人短评（列表页随行；可选）
 url: "" # 原文链接（可选）
 tags: [] # 横切标签（可选）
 duration: 60 # 实际用时·分钟（可选）
 pages: 0 # 页数（可选）
 source: "" # 作者/讲者/出处（可选）
-rating: 4 # 1-5（可选）
 revisit: false # 想复习？
 # added: 2026-03-01 # 从 backlog 晋升时保留原加入日期（可选）
 # updated: 2026-09-05 # 笔记最近修订（可选）

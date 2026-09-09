@@ -3,7 +3,7 @@ title: "WebGPU 基础与计算管线"
 type: doc
 date: 2026-06-15
 category: [Frontend, Rendering]
-description: 浏览器里的现代图形 API——为星图可能的 WebGL/WebGPU 渲染做准备。
+comment: 浏览器里的现代图形 API——为星图可能的 WebGL/WebGPU 渲染做准备。
 url: https://webgpufundamentals.org/
 tags: [webgpu, graphics, atlas]
 est: 480

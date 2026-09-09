@@ -3,12 +3,11 @@ title: "Rust 所有权模型（The Rust Programming Language, ch.4）"
 type: course
 date: 2026-07-12
 category: [Language, Rust]
-description: move / borrow / lifetime 三件套终于串起来了。
+comment: move / borrow / lifetime 三件套终于串起来了。
 url: https://doc.rust-lang.org/book/ch04-00-understanding-ownership.html
 tags: [rust, ownership, memory]
 duration: 120
 source: "The Rust Book"
-rating: 5
 demo: true
 ---
 

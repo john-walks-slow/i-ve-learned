@@ -3,11 +3,10 @@ title: "HTTP/3 与 QUIC：为什么要把 TCP 拆了重做"
 type: doc
 date: 2026-05-11
 category: [Systems, Networking]
-description: 队头阻塞是 TCP 的基因病，QUIC 在 UDP 上重写了传输层。
+comment: 队头阻塞是 TCP 的基因病，QUIC 在 UDP 上重写了传输层。
 url: https://http3-explained.haxx.se/
 tags: [http3, quic, networking]
 duration: 75
-rating: 4
 demo: true
 ---
 

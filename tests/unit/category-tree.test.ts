@@ -19,6 +19,7 @@ function m(
     category,
     tags,
     revisit: false,
+    hasBody: false,
     demo: false,
   };
 }

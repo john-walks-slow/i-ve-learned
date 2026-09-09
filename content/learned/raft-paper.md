@@ -3,13 +3,12 @@ title: "Raft: In Search of an Understandable Consensus Algorithm"
 type: paper
 date: 2026-09-05
 category: [Systems, Distributed]
-description: 从 backlog 晋升——终于把 Figure 8 啃下来了。
+comment: 从 backlog 晋升——终于把 Figure 8 啃下来了。
 url: https://raft.github.io/raft.pdf
 tags: [consensus, raft, replication]
 duration: 200
 pages: 18
 source: "Ongaro & Ousterhout"
-rating: 5
 added: 2026-08-30
 demo: true
 ---

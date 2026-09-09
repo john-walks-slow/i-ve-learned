@@ -3,11 +3,10 @@ title: "Rolldown：Vite 的 Rust 打包器核心"
 type: article
 date: 2026-01-25
 category: [Frontend, Tooling]
-description: 为什么 Vite 要用 Rust 重写 Rollup，以及它对构建速度的真实影响。
+comment: 为什么 Vite 要用 Rust 重写 Rollup，以及它对构建速度的真实影响。
 url: https://rolldown.rs/
 tags: [vite, bundler, rust]
 duration: 35
-rating: 3
 demo: true
 ---
 

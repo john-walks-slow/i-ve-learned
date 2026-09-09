@@ -17,18 +17,15 @@ const years = groupByMonth(learned);
 
 <Base>
   <section class="pt-14 pb-10">
-    <!-- 站点自述（衬线，编辑感） -->
     <h1 class="font-serif text-ink text-[1.75rem] leading-tight font-semibold m-0">
-      读过的、看完的、动手写下来的，
-      <br class="hidden sm:block" />
-      都落进两个 markdown 目录里。
+      学习记录
     </h1>
 
     <!-- 数据行（mono）：now 链到待学页 -->
     <p class="stats text-meta mt-4 m-0">
       {stats.learnedCount} learned ·
       {stats.hours >= 10 ? Math.round(stats.hours) : stats.hours}h · {stats.fields} fields ·
-      <a class="now text-accent" href={href('/backlog/')}>now: {stats.nowLearning}</a>
+      <a class="now text-accent" href={href('/backlog/')} title="backlog 中标记 status: learning 的条目">now: {stats.nowLearning}</a>
     </p>
 
     <!-- 12 个月活动热力带 -->
@@ -39,15 +36,6 @@ const years = groupByMonth(learned);
     <!-- 筛选 chips（增强脚本加载后可见） -->
     <FilterChips items={learned} />
   </section>
-
-  <!-- 年份锚点（多年时显示） -->
-  {years.length > 1 && (
-    <nav class="year-nav text-meta mb-2" aria-label="jump to year">
-      {years.map((y) => (
-        <a href={`#y${y.year}`}>{y.year}</a>
-      ))}
-    </nav>
-  )}
 
   <!-- 时间线主体：年 → 月 → 条目 -->
   <section class="pb-16">
@@ -81,18 +69,6 @@ const years = groupByMonth(learned);
   .stats { font-size: 0.8125rem; }
   .now { text-decoration: none; }
   .now:hover { text-decoration: underline; }
-
-  .year-nav {
-    display: flex;
-    gap: 1rem;
-    border-top: 1px solid var(--color-line);
-    padding-top: 0.75rem;
-  }
-  .year-nav a {
-    color: var(--color-ink-4);
-    text-decoration: none;
-  }
-  .year-nav a:hover { color: var(--color-ink-2); }
 
   .year { padding-top: 2rem; }
   .year-label {

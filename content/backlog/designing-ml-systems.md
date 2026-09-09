@@ -3,7 +3,7 @@ title: "Designing Machine Learning Systems"
 type: podcast
 date: 2026-03-10
 category: [ML, Fundamentals]
-description: Chip Huyen 的书出了播客版？其实是逐章访谈——通勤友好。
+comment: Chip Huyen 的书出了播客版？其实是逐章访谈——通勤友好。
 url: https://designingml.systems/
 tags: [mlops, production-ml]
 est: 300

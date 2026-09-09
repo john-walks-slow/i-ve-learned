@@ -15,7 +15,7 @@ const pages: Record<string, { title: string; description?: string }> =
       entry.id,
       {
         title: entry.data.title,
-        description: entry.data.description,
+        description: entry.data.comment,
       },
     ]),
   );

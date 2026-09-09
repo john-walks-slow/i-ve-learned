@@ -3,12 +3,11 @@ title: "What the heck is the event loop anyway?"
 type: video
 date: 2026-08-28
 category: [Language, TypeScript]
-description: 用 setTimeout 不等于异步这件事讲透浏览器的事件循环。
+comment: 用 setTimeout 不等于异步这件事讲透浏览器的事件循环。
 url: https://www.youtube.com/watch?v=8aGh-ZQ-ENo
 tags: [event-loop, async, browser, latency]
 duration: 26
 source: "Philip Roberts, JSConf EU"
-rating: 4
 demo: true
 ---
 

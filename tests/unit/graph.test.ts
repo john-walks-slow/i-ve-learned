@@ -15,6 +15,7 @@ function learned(
     date: new Date("2026-09-01"),
     tags: [],
     revisit: false,
+    hasBody: false,
     demo: false,
     ...over,
   };
@@ -31,6 +32,7 @@ function backlog(
     date: new Date("2026-08-01"),
     tags: [],
     revisit: false,
+    hasBody: false,
     demo: false,
     status: "todo",
     ...over,

@@ -3,12 +3,11 @@ title: "3Blue1Brown: But what is a neural network?"
 type: video
 date: 2026-05-30
 category: [ML, Fundamentals]
-description: 手写数字识别的视觉化讲法——矩阵就是像素的重新排列。
+comment: 手写数字识别的视觉化讲法——矩阵就是像素的重新排列。
 url: https://www.youtube.com/watch?v=aircAruvnKk
 tags: [neural-network, fundamentals]
 duration: 19
 source: "Grant Sanderson"
-rating: 4
 revisit: true
 demo: true
 ---

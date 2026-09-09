@@ -13,12 +13,13 @@ export interface MaterialCommon {
   type: LearnedData["type"];
   date: Date;
   category?: string[];
-  description?: string;
+  comment?: string;
+  /** 正文笔记是否存在（决定列表页 note → 链接） */
+  hasBody: boolean;
   url?: string;
   tags: string[];
   pages?: number;
   source?: string;
-  rating?: number;
   revisit: boolean;
   demo: boolean;
 }
@@ -47,12 +48,12 @@ function toLearned(entry: LearnedEntry): LearnedMaterial {
     type: d.type,
     date: d.date,
     category: d.category,
-    description: d.description,
+    comment: d.comment,
+    hasBody: Boolean(entry.body && entry.body.trim().length > 0),
     url: d.url,
     tags: d.tags,
     pages: d.pages,
     source: d.source,
-    rating: d.rating,
     revisit: d.revisit,
     demo: d.demo,
     duration: d.duration,
@@ -69,12 +70,12 @@ function toBacklog(entry: BacklogEntry): BacklogMaterial {
     type: d.type,
     date: d.date,
     category: d.category,
-    description: d.description,
+    comment: d.comment,
+    hasBody: Boolean(entry.body && entry.body.trim().length > 0),
     url: d.url,
     tags: d.tags,
     pages: d.pages,
     source: d.source,
-    rating: d.rating,
     revisit: d.revisit,
     demo: d.demo,
     est: d.est,

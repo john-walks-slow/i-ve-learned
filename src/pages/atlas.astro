@@ -247,10 +247,17 @@ const base = import.meta.env.BASE_URL.replace(/\/+$/, "");
         } else {
           const statusText = { done: 'learned', learning: 'learning', todo: 'todo' }[node.status] ?? '';
           const dateText = node.date ? node.date.slice(0, 10) : '';
+          // 标题优先指向原材料；链接行给原文与笔记两个去处
+          const titleHtml = node.url
+            ? `<a class="font-serif text-ink text-lg font-semibold no-underline hover:text-accent" target="_blank" rel="noopener noreferrer" href="${esc(node.url)}">${esc(node.label)}</a>`
+            : `<span class="font-serif text-ink text-lg font-semibold">${esc(node.label)}</span>`;
+          const links: string[] = [];
+          if (node.url) links.push(`<a class="text-ui text-accent no-underline" target="_blank" rel="noopener noreferrer" href="${esc(node.url)}">open source ↗</a>`);
+          if (node.hasBody) links.push(`<a class="text-ui text-accent no-underline" href="${base}/m/${encodeURIComponent(node.slug)}">note →</a>`);
           showPanel(`
             <p class="text-meta m-0">${esc(node.type)} · ${esc(statusText)}${dateText ? ` · ${esc(dateText)}` : ''}</p>
-            <h2 class="font-serif text-ink text-lg font-semibold mt-1 mb-2">${esc(node.label)}</h2>
-            <a class="text-ui text-accent no-underline" href="${base}/m/${encodeURIComponent(node.slug)}">view note →</a>
+            <h2 class="mt-1 mb-2">${titleHtml}</h2>
+            <p class="m-0 flex gap-3">${links.join('')}</p>
           `);
         }
       },

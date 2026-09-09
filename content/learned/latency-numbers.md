@@ -3,12 +3,11 @@ title: "Latency numbers every programmer should know"
 type: article
 date: 2026-08-20
 category: [Systems, Distributed]
-description: L1 缓存 0.5ns、同机房往返 500µs——数量级感是性能直觉的地基。
+comment: L1 缓存 0.5ns、同机房往返 500µs——数量级感是性能直觉的地基。
 url: https://gist.github.com/jboner/2841832
 tags: [latency, performance, back-of-envelope]
 duration: 15
 source: "Jeff Dean"
-rating: 4
 revisit: true
 demo: true
 ---

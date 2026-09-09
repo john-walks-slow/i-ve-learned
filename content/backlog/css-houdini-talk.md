@@ -3,7 +3,7 @@ title: "简单聊聊 CSS Houdini 与 Paint API"
 type: talk
 date: 2026-05-02
 category: [Frontend, Frameworks]
-description: 用 JS 画背景——以及为什么它在生产环境几乎没人用。
+comment: 用 JS 画背景——以及为什么它在生产环境几乎没人用。
 url: https://css-houdini.rocks/
 tags: [css, houdini]
 est: 45

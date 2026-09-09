@@ -7,20 +7,28 @@ import {
   TYPE_PLURAL,
 } from "../lib/materials";
 /**
- * 时间线条目行（计划 §3.1）：
- * 日期(mono) · 墨点 · 标题(衬线, 链接) · 类型 · 用时/页数 · 标签 · 示例角标
- * description 存在时弱化随行。
+ * 时间线条目行（计划 §3.1，260909 修订）：
+ * 日期(mono) · 标题(衬线，链接到原材料) · 类型 · 用时/页数 · 标签 · 示例角标
+ * comment = 个人短评（随行；有正文时两行截断 + note → 进详情页）。
  */
-import { href } from "../lib/url";
+import { href, slugify } from "../lib/url";
 
 interface Props {
   item: LearnedMaterial;
 }
 
 const { item } = Astro.props;
-const meta: string[] = [item.type];
+// meta 首位是分类（媒体类型右侧已有）；无分类条目直接从用时开始
+const meta: string[] = [];
 if (item.duration) meta.push(formatMinutes(item.duration));
 if (item.pages) meta.push(formatPages(item.pages));
+const hasCat = Boolean(item.category && item.category.length > 0);
+const catHref = hasCat
+  ? href(`/category/${item.category?.map(slugify).join("/")}/`)
+  : null;
+// 标题永远指向原材料本身；没有原文的落回本站详情页
+const titleHref = item.url ?? href(`/m/${item.slug}/`);
+const isExternal = Boolean(item.url);
 ---
 
 <article
@@ -29,30 +37,41 @@ if (item.pages) meta.push(formatPages(item.pages));
   data-cat={item.category?.[0] ?? 'none'}
 >
   <span class="when text-meta" aria-hidden="true">{formatDay(item.date)}</span>
-  <span class="dot" aria-hidden="true"></span>
   <div class="body">
     <h3 class="m-0 text-[1.0625rem] leading-snug">
       <a
         class="font-serif text-ink font-medium no-underline hover:text-accent transition-colors"
-        href={href(`/m/${item.slug}/`)}
+        href={titleHref}
+        target={isExternal ? '_blank' : undefined}
+        rel={isExternal ? 'noopener noreferrer' : undefined}
       >{item.title}</a>
       {item.demo && <span class="badge text-meta" title="演示条目，交付前替换为真实记录">示例</span>}
       {item.revisit && <span class="badge text-meta" title="值得重读">revisit</span>}
     </h3>
-    {item.description && (
-      <p class="desc font-serif italic text-ink-4 text-[0.9375rem] mt-1 mb-0">
-        {item.description}
+    {item.comment && (
+      <p class={`comment font-serif italic text-ink-4 text-[0.9375rem] mt-1 mb-0${item.hasBody ? ' clamp' : ''}`}>
+        {item.comment}
       </p>
     )}
     <p class="meta text-meta m-0 mt-1">
-      {meta.join(' · ')}
+      {hasCat && catHref && (
+        <a class="cat" href={catHref}>{item.category?.join(' / ')}</a>
+      )}
+      {hasCat && (meta.length > 0 || item.tags.length > 0 || item.hasBody) && ' · '}
+      {meta.length > 0 && meta.join(' · ')}
+      {meta.length > 0 && (item.tags.length > 0 || item.hasBody) && ' · '}
       {item.tags.length > 0 && (
         <span class="tags">
-          {' · '}
           {item.tags.map((tag) => (
             <a class="tag" href={href(`/tags/${tag}/`)}>{tag}</a>
           ))}
         </span>
+      )}
+      {item.hasBody && (
+        <>
+          {item.tags.length > 0 && ' · '}
+          <a class="note-link" href={href(`/m/${item.slug}/`)}>note →</a>
+        </>
       )}
     </p>
   </div>
@@ -62,9 +81,9 @@ if (item.pages) meta.push(formatPages(item.pages));
 <style>
   .entry {
     display: grid;
-    grid-template-columns: 3.25rem 1rem 1fr auto;
+    grid-template-columns: 3.25rem 1fr auto;
     align-items: baseline;
-    column-gap: 0.5rem;
+    column-gap: 1rem;
     padding: 0.65rem 0;
   }
   /* 月度叙事流的呼吸：条目之间用发丝线而非间距堆叠 */
@@ -75,16 +94,6 @@ if (item.pages) meta.push(formatPages(item.pages));
   .when {
     font-variant-numeric: tabular-nums;
     color: var(--color-ink-4);
-  }
-
-  .dot {
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: var(--color-ink-2);
-    align-self: center;
-    position: relative;
-    top: -1px;
   }
 
   .body { min-width: 0; }
@@ -101,8 +110,21 @@ if (item.pages) meta.push(formatPages(item.pages));
     vertical-align: 2px;
   }
 
-  .desc { max-width: 38rem; }
+  .comment { max-width: 38rem; }
+  /* 有详情页可看全文时才截断（note → 即 view more） */
+  .clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
 
+  .meta .cat {
+    color: var(--color-ink-4);
+    text-decoration: none;
+    border-bottom: 1px dotted var(--color-line-2);
+  }
+  .meta .cat:hover { color: var(--color-accent); border-color: currentColor; }
   .meta .tags { color: var(--color-ink-4); }
   .meta .tag {
     color: var(--color-ink-4);
@@ -110,6 +132,12 @@ if (item.pages) meta.push(formatPages(item.pages));
   }
   .meta .tag:hover { color: var(--color-accent); }
   .meta .tag + .tag { margin-left: 0.55em; }
+  .meta .note-link {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px dotted currentColor;
+  }
+  .meta .note-link:hover { color: var(--color-accent-deep); }
 
   .type {
     color: var(--color-ink-4);

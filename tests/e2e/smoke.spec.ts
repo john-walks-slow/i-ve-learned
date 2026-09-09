@@ -7,7 +7,7 @@ import { expect, test } from "@playwright/test";
 
 test("首页：自述 + 统计行 + 热力带 + 条目列表", async ({ page }) => {
   await page.goto("./");
-  await expect(page.locator("h1")).toContainText("markdown 目录");
+  await expect(page.locator("h1")).toContainText("学习记录");
   // 统计行
   await expect(page.getByText(/learned ·/)).toBeVisible();
   // 热力带存在且有月份标签
@@ -20,14 +20,14 @@ test("首页：自述 + 统计行 + 热力带 + 条目列表", async ({ page }) 
   await expect(entries.first()).toBeVisible();
 });
 
-test("时间线筛选：paper → 计数摘要变化", async ({ page }) => {
+test("时间线筛选：Systems → 计数摘要变化", async ({ page }) => {
   await page.goto("./");
   await page.waitForLoadState("load");
-  // chips 由 JS 揭示
-  const chip = page.locator("#filters [data-kind='type'][data-value='paper']");
+  // chips 由 JS 揭示（只按分类筛）
+  const chip = page.locator("#filters [data-kind='cat'][data-value='Systems']");
   await chip.waitFor({ state: "visible", timeout: 10_000 });
   await chip.click();
-  await expect(page.locator("#filter-summary")).toContainText(/4 \/ 22/);
+  await expect(page.locator("#filter-summary")).toContainText(/6 \/ 22/);
 });
 
 test("详情页：笔记正文 + 关联条目 + 面包屑", async ({ page }) => {
@@ -78,17 +78,32 @@ test("Backlog：统计行 + 正在学区 + 防腐烂提示", async ({ page }) =>
 
 test("⌘K：打开 → 搜索 → 键盘选择", async ({ page }) => {
   await page.goto("./");
-  await page.keyboard.press("Control+k");
+  // 鼠标点击导航栏徽章同样可打开
+  await page.locator("#ck-trigger").click();
   const overlay = page.locator(".ck-overlay");
+  await expect(overlay).toHaveClass(/is-open/);
+  await page.keyboard.press("Escape");
+  await expect(overlay).not.toHaveClass(/is-open/);
+  // 键盘路径
+  await page.keyboard.press("Control+k");
   await expect(overlay).toHaveClass(/is-open/);
   // 默认列表有 pages 组
   await expect(overlay.locator(".item").first()).toContainText("Timeline");
-  // 搜索 raft
+  // 搜索 raft：标题/标签/短评（comment 已进索引）命中
   await page.keyboard.type("raft");
-  await expect(overlay.locator(".item")).toHaveCount(2);
+  const hits = overlay.locator(".item");
+  await expect(hits.first()).toContainText("Raft");
+  await expect(hits).not.toHaveCount(0);
   await page.keyboard.press("ArrowDown");
   await page.keyboard.press("Escape");
   await expect(overlay).not.toHaveClass(/is-open/);
+
+  // comment 进索引：搜短评子串 "Figure 8"（只在 Raft 条目）→ 恰好 1 条
+  await page.keyboard.press("Control+k");
+  await expect(overlay).toHaveClass(/is-open/);
+  await page.keyboard.type("Figure 8");
+  await expect(overlay.locator(".item")).toHaveCount(1);
+  await expect(overlay.locator(".item").first()).toContainText("Raft");
 });
 
 test("无 JS 降级：时间线完整可见", async ({ browser }) => {

@@ -3,11 +3,10 @@ title: "CSS 深入浅出：containing block 与格式化上下文"
 type: blog
 date: 2026-07-30
 category: [Frontend, Rendering]
-description: 为什么 position:absolute 的基准不总是父元素——containing block 规则一页讲清。
+comment: 为什么 position:absolute 的基准不总是父元素——containing block 规则一页讲清。
 url: https://developer.mozilla.org/en-US/docs/Web/CSS/Containing_block
 tags: [css, layout]
 duration: 40
-rating: 3
 demo: true
 ---
 

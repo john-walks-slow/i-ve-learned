@@ -3,13 +3,12 @@ title: "FlashAttention: Fast and Memory-Efficient Exact Attention"
 type: paper
 date: 2026-07-20
 category: [ML, LLM]
-description: 不改数学，只改显存访问——SRAM 分块 + online softmax。
+comment: 不改数学，只改显存访问——SRAM 分块 + online softmax。
 url: https://arxiv.org/abs/2205.14135
 tags: [transformer, attention, gpu]
 duration: 180
 pages: 16
 source: "Dao et al., NeurIPS 2022"
-rating: 5
 demo: true
 ---
 

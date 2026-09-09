@@ -1,8 +1,8 @@
 ---
 /**
- * 筛选 chips（计划 §3.1）：类型 + 顶层分类，带计数。
+ * 筛选 chips（计划 §3.1，260909 修订）：只按顶层分类筛（带计数）。
  * 渐进增强：无 JS 时隐藏（hidden），增强脚本加载后揭示并接管。
- * 过滤为 AND 组合（类型 × 分类），单选切换，"all" 复位。
+ * 单选切换，"all" 复位。
  */
 import type { LearnedMaterial } from "../lib/content";
 
@@ -12,26 +12,15 @@ interface Props {
 
 const { items } = Astro.props;
 
-const typeCounts = new Map<string, number>();
 const catCounts = new Map<string, number>();
 for (const item of items) {
-  typeCounts.set(item.type, (typeCounts.get(item.type) ?? 0) + 1);
   const cat = item.category?.[0] ?? "none";
   catCounts.set(cat, (catCounts.get(cat) ?? 0) + 1);
 }
-const types = [...typeCounts.entries()].sort((a, b) => b[1] - a[1]);
 const cats = [...catCounts.entries()].sort((a, b) => b[1] - a[1]);
 ---
 
 <div id="filters" class="filters" hidden>
-  <div class="group" role="group" aria-label="filter by type">
-    <button class="chip text-meta is-active" data-kind="type" data-value="all">all</button>
-    {types.map(([type, count]) => (
-      <button class="chip text-meta" data-kind="type" data-value={type}>
-        {type}<span class="count">{count}</span>
-      </button>
-    ))}
-  </div>
   <div class="group" role="group" aria-label="filter by field">
     <button class="chip text-meta is-active" data-kind="cat" data-value="all">all</button>
     {cats.map(([cat, count]) => (

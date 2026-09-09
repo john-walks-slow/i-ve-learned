@@ -3,11 +3,10 @@ title: "Paco Coursey: Typography in Dark Mode"
 type: article
 date: 2026-06-15
 category: [Design, Typography]
-description: 深色模式不是把颜色反过来——字重要降，字号要升。
+comment: 深色模式不是把颜色反过来——字重要降，字号要升。
 url: https://paco.me/writing/typography-in-dark-mode
 tags: [typography, dark-mode, design]
 duration: 20
-rating: 4
 demo: true
 ---
 

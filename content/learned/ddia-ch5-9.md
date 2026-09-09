@@ -3,13 +3,12 @@ title: "《Designing Data-Intensive Applications》第 5–9 章"
 type: book
 date: 2026-08-14
 category: [Systems, Storage]
-description: 从 B-tree 到 LSM-tree，从单机事务到分布式一致性——数据库内核的经典地图。
+comment: 从 B-tree 到 LSM-tree，从单机事务到分布式一致性——数据库内核的经典地图。
 url: https://dataintensive.net/
 tags: [database, replication, consensus]
 duration: 640
 pages: 210
 source: "Martin Kleppmann"
-rating: 5
 demo: true
 ---
 

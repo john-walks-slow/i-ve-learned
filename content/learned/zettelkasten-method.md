@@ -3,11 +3,10 @@ title: "Zettelkasten 方法论"
 type: book
 date: 2025-12-10
 category: [Engineering, Architecture]
-description: "卡片盒笔记法——这个站的两目录模型就是它的极简版。"
+comment: "卡片盒笔记法——这个站的两目录模型就是它的极简版。"
 url: https://zettelkasten.de/introduction/
 tags: [note-taking, knowledge-management]
 duration: 120
-rating: 4
 demo: true
 ---
 

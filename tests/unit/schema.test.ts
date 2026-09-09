@@ -36,9 +36,16 @@ describe("learnedSchema", () => {
     expect(r.success).toBe(false);
   });
 
-  it("拒绝 rating 越界", () => {
-    expect(learnedSchema.safeParse({ ...base, rating: 6 }).success).toBe(false);
-    expect(learnedSchema.safeParse({ ...base, rating: 0 }).success).toBe(false);
+  it("拒绝非 http(s) 协议的 url（scheme 门）", () => {
+    expect(
+      learnedSchema.safeParse({ ...base, url: "javascript:alert(1)" }).success,
+    ).toBe(false);
+    expect(
+      learnedSchema.safeParse({ ...base, url: "data:text/html,x" }).success,
+    ).toBe(false);
+    expect(
+      learnedSchema.safeParse({ ...base, url: "https://example.com" }).success,
+    ).toBe(true);
   });
 
   it("拒绝非法 url", () => {

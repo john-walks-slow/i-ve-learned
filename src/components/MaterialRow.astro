@@ -13,6 +13,9 @@ interface Props {
 }
 
 const { item } = Astro.props;
+// 标题永远指向原材料本身；没有原文的落回本站详情页
+const titleHref = item.url ?? href(`/m/${item.slug}/`);
+const isExternal = Boolean(item.url);
 const meta: string[] = [item.type];
 if (isBacklog(item)) {
   if (item.est) meta.push(formatMinutes(item.est));
@@ -28,14 +31,24 @@ if (isBacklog(item)) {
   <h3 class="m-0 text-[1.0625rem] leading-snug">
     <a
       class="font-serif text-ink font-medium no-underline hover:text-accent transition-colors"
-      href={href(`/m/${item.slug}/`)}
+      href={titleHref}
+      target={isExternal ? '_blank' : undefined}
+      rel={isExternal ? 'noopener noreferrer' : undefined}
     >{item.title}</a>
     {item.demo && <span class="badge text-meta">示例</span>}
   </h3>
+  {item.comment && (
+    <p class={`comment font-serif italic text-ink-4 text-[0.9375rem] m-0 mt-1${item.hasBody ? ' clamp' : ''}`}>
+      {item.comment}
+    </p>
+  )}
   <p class="text-meta m-0 mt-1">
     {meta.join(' · ')}
     {item.category && item.category.length > 0 && (
       <span class="cat"> · {item.category.join(' / ')}</span>
+    )}
+    {item.hasBody && (
+      <span> · <a class="note-link" href={href(`/m/${item.slug}/`)}>note →</a></span>
     )}
   </p>
 </article>
@@ -58,4 +71,17 @@ if (isBacklog(item)) {
     vertical-align: 2px;
   }
   .cat { color: var(--color-ink-4); }
+  .comment { max-width: 38rem; }
+  .clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+  }
+  .note-link {
+    color: var(--color-accent);
+    text-decoration: none;
+    border-bottom: 1px dotted currentColor;
+  }
+  .note-link:hover { color: var(--color-accent-deep); }
 </style>

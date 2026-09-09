@@ -27,6 +27,10 @@ export interface AtlasMaterialNode {
   slug: string;
   type: MaterialType;
   status: AtlasStatus;
+  /** 原材料链接（面板标题跳转用） */
+  url?: string;
+  /** 是否有正文笔记（面板 note → 链接） */
+  hasBody: boolean;
   /** 渲染半径（时长/笔记量的弱编码，3–7） */
   size: number;
   /** ISO 日期（时间即角度的布局依据，UTC 保证跨平台确定性） */
@@ -112,6 +116,8 @@ export function buildGraph(
       slug: m.slug,
       type: m.type,
       status: materialStatus(m),
+      url: m.url,
+      hasBody: m.hasBody,
       size: sizeFor(m),
       date: m.date.toISOString(),
       x: 0,

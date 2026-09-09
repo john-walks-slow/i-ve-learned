@@ -13,11 +13,30 @@ export const GET: APIRoute = async () => {
   const backlog = await getBacklog();
 
   const items: SearchItem[] = [
-    { g: "pages", label: "Timeline", href: "/", k: "timeline home 首页" },
-    { g: "pages", label: "Atlas", href: "/atlas/", k: "atlas graph 星图" },
-    { g: "pages", label: "Backlog", href: "/backlog/", k: "backlog todo 待学" },
     {
       g: "pages",
+      slug: "page-timeline",
+      label: "Timeline",
+      href: "/",
+      k: "timeline home 首页",
+    },
+    {
+      g: "pages",
+      slug: "page-atlas",
+      label: "Atlas",
+      href: "/atlas/",
+      k: "atlas graph 星图",
+    },
+    {
+      g: "pages",
+      slug: "page-backlog",
+      label: "Backlog",
+      href: "/backlog/",
+      k: "backlog todo 待学",
+    },
+    {
+      g: "pages",
+      slug: "page-fields",
       label: "Fields",
       href: "/category/",
       k: "fields category 分类",
@@ -28,8 +47,9 @@ export const GET: APIRoute = async () => {
     items.push({
       g: "learned",
       label: m.title,
-      href: `/m/${m.slug}/`,
-      k: [m.type, m.category?.join(" "), m.tags.join(" ")]
+      slug: m.slug,
+      href: m.url ?? `/m/${m.slug}/`,
+      k: [m.type, m.category?.join(" "), m.tags.join(" "), m.comment]
         .filter(Boolean)
         .join(" "),
     });
@@ -38,8 +58,9 @@ export const GET: APIRoute = async () => {
     items.push({
       g: "backlog",
       label: m.title,
-      href: `/m/${m.slug}/`,
-      k: [m.type, m.status, m.category?.join(" "), m.tags.join(" ")]
+      slug: m.slug,
+      href: m.url ?? `/m/${m.slug}/`,
+      k: [m.type, m.status, m.category?.join(" "), m.tags.join(" "), m.comment]
         .filter(Boolean)
         .join(" "),
     });
@@ -47,6 +68,7 @@ export const GET: APIRoute = async () => {
   for (const top of TOP_ORDER.keys()) {
     items.push({
       g: "categories",
+      slug: `cat-${slugify(top)}`,
       label: top,
       href: `/category/${slugify(top)}/`,
       k: "field",
@@ -59,6 +81,7 @@ export const GET: APIRoute = async () => {
   for (const tag of tags) {
     items.push({
       g: "tags",
+      slug: `tag-${tag}`,
       label: `#${tag}`,
       href: `/tags/${tag}/`,
       k: "tag 标签",
@@ -73,6 +96,8 @@ export const GET: APIRoute = async () => {
 interface SearchItem {
   g: "pages" | "learned" | "backlog" | "categories" | "tags";
   label: string;
+  /** MiniSearch 主键（slug 唯一；href 可能是共享的原文外链） */
+  slug?: string;
   href: string;
   k?: string;
 }

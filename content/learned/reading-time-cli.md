@@ -3,10 +3,9 @@ title: "给博客做了一个阅读时长估算器"
 type: project
 date: 2026-06-10
 category: [Engineering, Architecture]
-description: 一个 200 行的 CLI，顺手处理了 CJK 字符按 0.5 字/秒折算的问题。
+comment: 一个 200 行的 CLI，顺手处理了 CJK 字符按 0.5 字/秒折算的问题。
 tags: [cli, reading-time, cjk]
 duration: 180
-rating: 3
 demo: true
 ---
 

@@ -34,8 +34,12 @@ export const baseMaterialSchema = z.object({
     .refine((p) => validateCategoryPath(p ?? []) === null, {
       message: "分类路径未注册（src/data/categories.ts 是唯一真相源）",
     }),
-  description: z.string().max(300).optional(),
-  url: z.url().optional(),
+  /** 个人短评（列表页随行；区别于正文笔记 body） */
+  comment: z.string().max(300).optional(),
+  url: z
+    .url()
+    .refine((u) => /^https?:\/\//.test(u), "url 需以 http(s):// 开头")
+    .optional(),
   // 标签直接作为 URL 段（/tags/[tag]/），限定小写字母数字连字符
   tags: z
     .array(
@@ -51,7 +55,6 @@ export const baseMaterialSchema = z.object({
     .default([]),
   pages: z.number().int().positive().optional(),
   source: z.string().max(120).optional(),
-  rating: z.number().int().min(1).max(5).optional(),
   revisit: z.boolean().default(false),
   /** 演示条目标记：页面上有"示例"角标；上线前整体移除（M7 验收项） */
   demo: z.boolean().default(false),

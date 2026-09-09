@@ -58,7 +58,7 @@ function isStale(m: BacklogMaterial): boolean {
   <!-- 正在学（置顶） -->
   {learning.length > 0 && (
     <section class="now mt-6" aria-label="正在学">
-      <h2 class="sec-label m-0">
+      <h2 class="sec-label m-0" title="backlog 条目里 status: learning 的那些；学完 git mv 到 learned 后自动离开">
         <span class="pulse" aria-hidden="true"></span>now learning
       </h2>
       <div class="mt-3 flex flex-col">
@@ -67,7 +67,9 @@ function isStale(m: BacklogMaterial): boolean {
             <h3 class="m-0 text-[1.0625rem] leading-snug">
               <a
                 class="font-serif text-ink font-medium no-underline hover:text-accent transition-colors"
-                href={href(`/m/${m.slug}/`)}
+                href={m.url ?? href(`/m/${m.slug}/`)}
+                target={m.url ? '_blank' : undefined}
+                rel={m.url ? 'noopener noreferrer' : undefined}
               >{m.title}</a>
               {m.demo && <span class="badge text-meta">示例</span>}
             </h3>
@@ -91,7 +93,9 @@ function isStale(m: BacklogMaterial): boolean {
             <h3 class="m-0 text-[1.0625rem] leading-snug">
               <a
                 class="font-serif text-ink font-medium no-underline hover:text-accent transition-colors"
-                href={href(`/m/${m.slug}/`)}
+                href={m.url ?? href(`/m/${m.slug}/`)}
+                target={m.url ? '_blank' : undefined}
+                rel={m.url ? 'noopener noreferrer' : undefined}
               >{m.title}</a>
               {m.demo && <span class="badge text-meta">示例</span>}
             </h3>
@@ -117,7 +121,9 @@ function isStale(m: BacklogMaterial): boolean {
             <h3 class="m-0 text-[1.0625rem] leading-snug">
               <a
                 class="font-serif text-ink font-medium no-underline hover:text-accent transition-colors"
-                href={href(`/m/${m.slug}/`)}
+                href={m.url ?? href(`/m/${m.slug}/`)}
+                target={m.url ? '_blank' : undefined}
+                rel={m.url ? 'noopener noreferrer' : undefined}
               >{m.title}</a>
             </h3>
             {m.why && <p class="why font-serif italic text-ink-4 text-sm m-0 mt-1">{m.why}</p>}

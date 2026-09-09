@@ -81,7 +81,7 @@ const statusLabel = isLearned
   : ("status" in data && data.status) || "todo";
 ---
 
-<Base title={data.title} description={data.description} ogSlug={entry.id}>
+<Base title={data.title} description={data.comment} ogSlug={entry.id}>
   <article class="pt-12 pb-16">
     <!-- 头部 -->
     <header>
@@ -104,6 +104,11 @@ const statusLabel = isLearned
       {waitedMonths > 0 && (
         <p class="waited font-serif italic text-ink-4 text-[0.9375rem] m-0 mt-2">
           从想学到学完，等了 {waitedMonths} 个月。
+        </p>
+      )}
+      {data.comment && (
+        <p class="lead font-serif italic text-ink-3 text-[1.0625rem] leading-relaxed m-0 mt-4">
+          {data.comment}
         </p>
       )}
 
@@ -149,12 +154,6 @@ const statusLabel = isLearned
           </p>
         )}
         <dl class="side-meta m-0 mt-6">
-          {data.rating && (
-            <div>
-              <dt class="text-meta">rating</dt>
-              <dd class="m-0 font-mono text-sm text-ink-2">{'★'.repeat(data.rating)}</dd>
-            </div>
-          )}
           {data.source && (
             <div>
               <dt class="text-meta">source</dt>
