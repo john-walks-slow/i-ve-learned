@@ -1,5 +1,4 @@
 import { describe, expect, it } from "vitest";
-import { CATEGORIES } from "../../src/data/categories";
 import type { BacklogMaterial, LearnedMaterial } from "../../src/lib/content";
 import { buildGraph } from "../../src/lib/graph/builder";
 import { applyLayout } from "../../src/lib/graph/layout";
@@ -42,7 +41,7 @@ function backlog(
 }
 
 describe("buildGraph", () => {
-  it("分类骨架完整（即使无条目），member/tag 边正确", () => {
+  it("分类节点随条目派生，member/tag 边正确", () => {
     const g = buildGraph(
       [learned("a", { category: ["Systems", "Distributed"], tags: ["x"] })],
       [backlog("b", { category: ["Frontend", "Rendering"], tags: ["x"] })],
@@ -75,6 +74,11 @@ describe("buildGraph", () => {
       [],
     );
     expect(g.links.filter((l) => l.kind === "tag")).toHaveLength(0);
+  });
+
+  it("空输入 → 无分类节点（星系随内容出现）", () => {
+    const g = buildGraph([], []);
+    expect(g.nodes.filter((n) => n.kind === "category")).toHaveLength(0);
   });
 
   it("draft 由数据层过滤；demo 条目正常进图谱（上线前整体移除）", () => {
@@ -119,13 +123,13 @@ describe("applyLayout（确定性 + 增量稳定）", () => {
     );
     const beforePos = new Map(before.nodes.map((n) => [n.id, [n.x, n.y]]));
 
-    // 新增一个材料 + 一个带新分类引用的条目
+    // 新增一个材料（挂到已存在的分类路径——新子分类会重排扇区，不在此合同内）
     const after = applyLayout(
       buildGraph(
         [
           learned("a", { category: ["Systems", "Distributed"] }),
           learned("b", { category: ["ML"] }),
-          learned("new-one", { category: ["Systems", "Storage"] }),
+          learned("new-one", { category: ["Systems", "Distributed"] }),
         ],
         [backlog("c", { category: ["Design"] })],
       ),
@@ -166,16 +170,29 @@ describe("applyLayout（确定性 + 增量稳定）", () => {
   });
 
   it("同扇区相邻子分类的间距 > 双盘直径（防材料盘重叠）", () => {
-    const g = applyLayout(buildGraph([], []));
-    const systems = CATEGORIES.find((c) => c.name === "Systems")!;
-    const names = systems.children ?? [];
-    for (let i = 0; i + 1 < names.length; i++) {
-      const a = g.nodes.find((n) => n.id === `cat:Systems/${names[i]}`)!;
-      const b = g.nodes.find((n) => n.id === `cat:Systems/${names[i + 1]}`)!;
-      const dist = Math.hypot(a.x - b.x, a.y - b.y);
-      expect(dist, `${names[i]} 与 ${names[i + 1]} 弦距`).toBeGreaterThan(
-        80 * 2,
+    // 子分类从材料派生：造一个有两子分类的扇区
+    const g = applyLayout(
+      buildGraph(
+        [
+          learned("a", { category: ["Systems", "Distributed"] }),
+          learned("b", { category: ["Systems", "Storage"] }),
+        ],
+        [],
+      ),
+    );
+    const children = g.nodes
+      .filter((n) => n.kind === "category" && !n.top)
+      .sort((a, b) => a.id.localeCompare(b.id));
+    expect(children.length).toBe(2);
+    for (let i = 0; i + 1 < children.length; i++) {
+      const dist = Math.hypot(
+        children[i].x - children[i + 1].x,
+        children[i].y - children[i + 1].y,
       );
+      expect(
+        dist,
+        `${children[i].id} 与 ${children[i + 1].id} 弦距`,
+      ).toBeGreaterThan(80 * 2);
     }
   });
 

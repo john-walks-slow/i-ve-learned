@@ -54,3 +54,20 @@ biome 0 · astro check 0 错 · vitest 43/43 · build 118 页 · budgets 6/6（�
    - ⌘K 默认列表/搜索行为已验证（atlas 精确命中 1）
 
 门禁复核：biome 0 · astro check 0 · vitest 43 · build 28 页（空内容）· budgets 6 · e2e 5；临时条目实测 noteType 渲染 + 空态双重视觉验证。
+
+## 第四轮反馈（同日追加）
+
+1. backlog 页脚 "学完一项 = git mv…" 提示行删除（维护者向文案不该出现在访客页）
+2. 分类改为全自动：删除 `src/data/categories.ts` 注册表——分类树/分类页/Fields/
+   星图星系/⌘K field 条目全部从条目 frontmatter 派生；schema 解锁注册校验
+   （保留最多两级约束）；排序字母序保星图角槽稳定（增量稳定单测重定义合同：
+   挂已有分类的新条目不挪节点；新子分类重排扇区属预期）
+3. search-index 分类组含子分类（"Xenobiology / Alien Biochemistry" 可搜）
+4. Fields 页空态提示；e2e atlas 改为有节点才验像素（空内容合法空画布）
+5. ive-learned-update 技能补「分类与标签全自动」章节
+
+排障：fuser 在本环境不存在导致 preview "重启"从未生效、新旧服务器抢端口
+（新路由 404 假象）——改用 pkill（注意自匹配陷阱）。临时条目端到端验证
+自动派生后清理，交付态 = 空内容 4 页。
+
+门禁：biome 0 / astro check 0 / vitest 40（重写派生用例）/ build 4 页 / budgets 6 / e2e 5（空态）+ 内容路径人工验证。

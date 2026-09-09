@@ -1,10 +1,11 @@
 ---
-import { CATEGORIES } from "../../data/categories";
 /**
  * 分类索引页 /category/（fields 总览）。
  * 也是星图的文本投影（a11y）：不想/不能使用 Canvas 的访客从这里按字段浏览。
+ * 分类树从内容自动派生——没有注册表，字段随条目出现。
  */
 import Base from "../../layouts/Base.astro";
+import { buildCategoryTree } from "../../lib/category-tree";
 import type { BacklogMaterial, LearnedMaterial } from "../../lib/content";
 import { getBacklog, getLearned } from "../../lib/content";
 import { href, slugify } from "../../lib/url";
@@ -13,13 +14,13 @@ const learned = await getLearned();
 const backlog = await getBacklog();
 const pool: (LearnedMaterial | BacklogMaterial)[] = [...learned, ...backlog];
 
-const fields = CATEGORIES.map((def) => {
-  const items = pool.filter((m) => m.category?.[0] === def.name);
+const tree = buildCategoryTree(pool);
+const fields = tree.map((node) => {
+  const items = pool.filter((m) => m.category?.[0] === node.name);
   return {
-    name: def.name,
-    slug: slugify(def.name),
-    note: def.note,
-    count: items.length,
+    name: node.name,
+    slug: slugify(node.name),
+    count: node.totalCount,
     hours: Math.round(
       items.reduce(
         (s, m) =>
@@ -27,15 +28,13 @@ const fields = CATEGORIES.map((def) => {
         0,
       ) / 60,
     ),
-    children: (def.children ?? []).map((child) => ({
-      name: child,
-      slug: slugify(child),
-      count: pool.filter(
-        (m) => m.category?.join("/") === `${def.name}/${child}`,
-      ).length,
+    children: node.children.map((child) => ({
+      name: child.name,
+      slug: slugify(child.name),
+      count: child.ownCount,
     })),
   };
-}).filter((f) => f.count > 0);
+});
 ---
 
 <Base title="Fields" description="按领域浏览学习材料">
@@ -49,6 +48,12 @@ const fields = CATEGORIES.map((def) => {
     <h1 class="font-serif text-ink text-2xl font-semibold m-0 mt-3">Fields</h1>
     <p class="text-meta m-0 mt-2">星图的文本投影 · {fields.length} fields</p>
 
+    {fields.length === 0 && (
+      <p class="font-serif italic text-ink-4 mt-10">
+        还没有字段——第一篇笔记的 category 会自动长出分类树。
+      </p>
+    )}
+
     <div class="grid mt-10 gap-x-10 gap-y-8 md:grid-cols-2">
       {fields.map((f) => (
         <div class="field">
@@ -59,7 +64,6 @@ const fields = CATEGORIES.map((def) => {
             >{f.name}</a>
             <span class="count text-meta">{f.count}</span>
           </h2>
-          {f.note && <p class="note font-serif italic text-ink-4 text-sm m-0 mt-1">{f.note}</p>}
           {f.children.length > 0 && (
             <ul class="list-none flex flex-wrap gap-x-4 gap-y-1 m-0 mt-3 p-0">
               {f.children.map((c) => (

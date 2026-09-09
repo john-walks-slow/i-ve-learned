@@ -1,4 +1,4 @@
-import { CATEGORIES } from "../../data/categories";
+import { buildCategoryTree } from "../category-tree";
 import type { BacklogMaterial, LearnedMaterial } from "../content";
 import type { MaterialType } from "../schema";
 
@@ -83,23 +83,23 @@ export function buildGraph(
 
   const materials = [...learned, ...backlog];
 
-  // 分类节点：来自注册表结构（即使空也保留骨架）
-  for (const def of CATEGORIES) {
+  // 分类节点：从材料派生（内容里出现过的分类才有星系）
+  for (const top of buildCategoryTree(materials)) {
     nodes.push({
-      id: `cat:${def.name}`,
+      id: `cat:${top.name}`,
       kind: "category",
-      label: def.name,
-      path: def.name,
+      label: top.name,
+      path: top.name,
       top: true,
       x: 0,
       y: 0,
     });
-    for (const child of def.children ?? []) {
+    for (const child of top.children) {
       nodes.push({
-        id: `cat:${def.name}/${child}`,
+        id: `cat:${top.name}/${child.name}`,
         kind: "category",
-        label: child,
-        path: `${def.name}/${child}`,
+        label: child.name,
+        path: `${top.name}/${child.name}`,
         top: false,
         x: 0,
         y: 0,

@@ -1,10 +1,10 @@
 ---
-import { TOP_ORDER } from "../data/categories";
 /**
  * 待学清单 /backlog（计划 §3.3）。
  * 正在学置顶（琥珀点缀）→ 分类分组（why 优先展示）→ 防腐烂提示。
  */
 import Base from "../layouts/Base.astro";
+import { buildCategoryTree } from "../lib/category-tree";
 import type { BacklogMaterial } from "../lib/content";
 import { getBacklog, getLearned } from "../lib/content";
 import { agoLabel, formatMinutes, silentMonthsSince } from "../lib/materials";
@@ -27,11 +27,11 @@ const oldestLabel = oldest
   ? agoLabel(new Date(oldest)).replace(" ago", "")
   : "—";
 
-// 按顶层分类分组（注册表顺序 = Map 插入顺序）
-const groups = [...TOP_ORDER.keys()]
-  .map((top) => ({
-    top,
-    items: waiting.filter((m) => m.category?.[0] === top),
+// 按顶层分类分组（派生树顺序：字母序）
+const groups = buildCategoryTree(waiting)
+  .map((node) => ({
+    top: node.name,
+    items: waiting.filter((m) => m.category?.[0] === node.name),
   }))
   .filter((g) => g.items.length > 0);
 const uncategorized = waiting.filter(
@@ -137,9 +137,6 @@ function isStale(m: BacklogMaterial): boolean {
     <p class="font-serif italic text-ink-4 mt-8">待学清单是空的——去 content/backlog/ 放一个想法。</p>
   )}
 
-  <p class="howto text-meta mt-10 mb-16">
-    学完一项 = <code>git mv content/backlog/xx.md content/learned/</code>，链接不变。
-  </p>
 </Base>
 
 <style>
@@ -201,11 +198,4 @@ function isStale(m: BacklogMaterial): boolean {
   .stale h3 a { color: var(--color-ink-3); }
   .stale .ask { color: var(--color-ink-4); font-style: italic; }
 
-  .howto code {
-    font-family: var(--font-mono);
-    font-size: 0.6875rem;
-    background: var(--color-line);
-    border-radius: 3px;
-    padding: 0.1em 0.35em;
-  }
 </style>

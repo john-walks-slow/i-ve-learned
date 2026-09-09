@@ -1,5 +1,4 @@
 import { z } from "zod";
-import { validateCategoryPath } from "../data/categories";
 
 /**
  * 材料类型枚举 — 与页面展示、⌘K 映射一一对应。
@@ -27,13 +26,8 @@ export const baseMaterialSchema = z.object({
   type: z.enum(MATERIAL_TYPES),
   /** learned = 学完日期；backlog = 加入日期 */
   date: z.coerce.date(),
-  category: z
-    .array(z.string().min(1))
-    .max(2)
-    .optional()
-    .refine((p) => validateCategoryPath(p ?? []) === null, {
-      message: "分类路径未注册（src/data/categories.ts 是唯一真相源）",
-    }),
+  /** 最多两级，如 [Systems, Distributed]；分类树随内容自动生成 */
+  category: z.array(z.string().min(1).max(32)).max(2).optional(),
   /** 个人短评（列表页随行；区别于正文笔记 body） */
   comment: z.string().max(300).optional(),
   /** 正文类型（时间线 note → 按钮文案）：note | translation | fulltext | … */

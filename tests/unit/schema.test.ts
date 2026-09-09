@@ -26,9 +26,14 @@ describe("learnedSchema", () => {
     expect(r.date).toBeInstanceOf(Date);
   });
 
-  it("拒绝未注册分类", () => {
-    const r = learnedSchema.safeParse({ ...base, category: ["Nope"] });
-    expect(r.success).toBe(false);
+  it("分类自由填写（自动派生），最多两级", () => {
+    expect(
+      learnedSchema.safeParse({ ...base, category: ["Quantum", "Entropy"] })
+        .success,
+    ).toBe(true);
+    expect(
+      learnedSchema.safeParse({ ...base, category: ["A", "B", "C"] }).success,
+    ).toBe(false);
   });
 
   it("拒绝非法 type", () => {

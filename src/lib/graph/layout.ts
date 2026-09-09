@@ -1,5 +1,4 @@
-import { CATEGORIES } from "../../data/categories";
-import type { AtlasGraph } from "./builder";
+import type { AtlasCategoryNode, AtlasGraph } from "./builder";
 
 /**
  * 确定性聚类布局（构建期运行，写死进 graph.json）。
@@ -73,32 +72,33 @@ function topAngle(index: number, total: number): number {
 export function applyLayout(graph: AtlasGraph): AtlasGraph {
   const byId = new Map(graph.nodes.map((n) => [n.id, n]));
 
-  const topDefs = CATEGORIES;
-  const N = topDefs.length;
+  // 1) 顶层分类：环形固定角槽（顺序 = 派生树字母序，内容增删不挪角槽）
+  const tops = graph.nodes.filter(
+    (n): n is AtlasCategoryNode => n.kind === "category" && n.top,
+  );
+  const N = tops.length;
 
-  // 1) 顶层分类：环形固定角槽
-  topDefs.forEach((def, i) => {
+  tops.forEach((topNode, i) => {
     const angle = topAngle(i, N);
-    const node = byId.get(`cat:${def.name}`);
-    if (node) {
-      node.x = Math.round(Math.cos(angle) * LAYOUT.ringRadius);
-      node.y = Math.round(Math.sin(angle) * LAYOUT.ringRadius);
-    }
+    topNode.x = Math.round(Math.cos(angle) * LAYOUT.ringRadius);
+    topNode.y = Math.round(Math.sin(angle) * LAYOUT.ringRadius);
 
-    // 2) 子分类：沿半径向外（R1 + subOrbit），在扇区内按注册表顺序均分张角；
+    // 2) 子分类：沿半径向外（R1 + subOrbit），在扇区内均分张角；
     //    半径加确定性扰动（child 路径哈希）打破完美弧线，避免"网格吸附感"
-    const children = def.children ?? [];
+    const children = graph.nodes.filter(
+      (n): n is AtlasCategoryNode =>
+        n.kind === "category" &&
+        !n.top &&
+        n.path.startsWith(`${topNode.path}/`),
+    );
     const k = children.length;
     children.forEach((child, j) => {
       const offset = k === 1 ? 0 : (j / (k - 1) - 0.5) * 2 * LAYOUT.subSpread;
       const subAngle = angle + offset;
       const r =
-        LAYOUT.ringRadius + LAYOUT.subOrbit + ((fnv1a(child) % 51) - 25);
-      const cnode = byId.get(`cat:${def.name}/${child}`);
-      if (cnode) {
-        cnode.x = Math.round(Math.cos(subAngle) * r);
-        cnode.y = Math.round(Math.sin(subAngle) * r);
-      }
+        LAYOUT.ringRadius + LAYOUT.subOrbit + ((fnv1a(child.path) % 51) - 25);
+      child.x = Math.round(Math.cos(subAngle) * r);
+      child.y = Math.round(Math.sin(subAngle) * r);
     });
   });
 

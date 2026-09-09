@@ -24,24 +24,31 @@ test("Atlas：canvas 渲染 + 文本投影入口", async ({ page }) => {
   await page.goto("./atlas");
   const canvas = page.locator("#atlas-canvas");
   await expect(canvas).toBeVisible();
-  // 等渲染器入场完成（图上有像素）
-  await expect
-    .poll(
-      async () =>
-        page.evaluate(() => {
-          const c = document.getElementById(
-            "atlas-canvas",
-          ) as HTMLCanvasElement;
-          return (
-            c
-              .getContext("2d")
-              ?.getImageData(0, 0, c.width, c.height)
-              .data.some((v) => v !== 0) ?? false
-          );
-        }),
-      { timeout: 15_000 },
-    )
-    .toBe(true);
+  // 有节点时等渲染器入场（图上有像素）；空内容时 canvas 合法为空
+  const nodeCount = await page.evaluate(async () => {
+    const res = await fetch(new URL("graph.json", location.href));
+    const g = (await res.json()) as { nodes: unknown[] };
+    return g.nodes.length;
+  });
+  if (nodeCount > 0) {
+    await expect
+      .poll(
+        async () =>
+          page.evaluate(() => {
+            const c = document.getElementById(
+              "atlas-canvas",
+            ) as HTMLCanvasElement;
+            return (
+              c
+                .getContext("2d")
+                ?.getImageData(0, 0, c.width, c.height)
+                .data.some((v) => v !== 0) ?? false
+            );
+          }),
+        { timeout: 15_000 },
+      )
+      .toBe(true);
+  }
   await expect(page.locator('a:has-text("text view")')).toBeVisible();
   // CI 审阅产物：入场完成后的整页截图（上传为 artifact）
   await page.waitForTimeout(1200);

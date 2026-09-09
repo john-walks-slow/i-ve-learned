@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { TOP_ORDER } from "../data/categories";
+import { buildCategoryTree } from "../lib/category-tree";
 import { getBacklog, getLearned } from "../lib/content";
 import { slugify } from "../lib/url";
 
@@ -65,14 +65,23 @@ export const GET: APIRoute = async () => {
         .join(" "),
     });
   }
-  for (const top of TOP_ORDER.keys()) {
+  for (const top of buildCategoryTree([...learned, ...backlog])) {
     items.push({
       g: "categories",
-      slug: `cat-${slugify(top)}`,
-      label: top,
-      href: `/category/${slugify(top)}/`,
+      slug: `cat-${slugify(top.name)}`,
+      label: top.name,
+      href: `/category/${slugify(top.name)}/`,
       k: "field",
     });
+    for (const child of top.children) {
+      items.push({
+        g: "categories",
+        slug: `cat-${slugify(top.name)}-${slugify(child.name)}`,
+        label: `${top.name} / ${child.name}`,
+        href: `/category/${slugify(top.name)}/${slugify(child.name)}/`,
+        k: "field",
+      });
+    }
   }
   const tags = new Set<string>();
   for (const m of [...learned, ...backlog]) {
