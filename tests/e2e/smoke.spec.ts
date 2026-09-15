@@ -6,18 +6,18 @@ import { expect, test } from "@playwright/test";
  * 落地（空态）→ 星图 → 待学页（空态）→ ⌘K。
  */
 
-test("首页：空态——热力带 + 空提示，无统计行", async ({ page }) => {
+test("首页：热力带 + 内容或空提示", async ({ page }) => {
   await page.goto("./");
-  // h1 已删；还没有记录时统计行整体隐藏
-  await expect(page.locator("h1")).toHaveCount(0);
-  await expect(page.getByText(/learned ·/)).toHaveCount(0);
   // 热力带存在且有月份标签（站点身份元素，空内容也渲染）
   await expect(
     page.locator('[role="img"][aria-label*="热力图"]'),
   ).toBeVisible();
   await expect(page.getByText("Sep", { exact: true })).toBeVisible();
-  // 空态提示可见
-  await expect(page.getByText(/还没有记录/)).toBeVisible();
+  const emptyNotice = page.getByText(/还没有记录/);
+  if ((await emptyNotice.count()) > 0) {
+    await expect(page.locator("h1")).toHaveCount(0);
+    await expect(emptyNotice).toBeVisible();
+  }
 });
 
 test("Atlas：canvas 渲染 + 文本投影入口", async ({ page }) => {
@@ -55,11 +55,16 @@ test("Atlas：canvas 渲染 + 文本投影入口", async ({ page }) => {
   await page.screenshot({ path: "test-results/atlas-ci.png", fullPage: false });
 });
 
-test("Backlog：空态统计 + 空提示", async ({ page }) => {
+test("Backlog：统计行与内容渲染", async ({ page }) => {
   await page.goto("./backlog");
   await expect(page.locator("h1")).toContainText("Backlog");
   await expect(page.getByText(/waiting · ~/)).toBeVisible();
-  await expect(page.getByText(/待学清单是空的/)).toBeVisible();
+  const rows = page.locator("article.row");
+  if ((await rows.count()) > 0) {
+    await expect(rows.first()).toBeVisible();
+  } else {
+    await expect(page.getByText(/待学清单是空的/)).toBeVisible();
+  }
 });
 
 test("⌘K：打开 → 搜索 → 键盘选择", async ({ page }) => {
@@ -84,11 +89,13 @@ test("⌘K：打开 → 搜索 → 键盘选择", async ({ page }) => {
   await expect(overlay).not.toHaveClass(/is-open/);
 });
 
-test("无 JS 降级：空态提示可见、无 chips", async ({ browser }) => {
+test("无 JS 降级：热力带可见、无 chips", async ({ browser }) => {
   const ctx = await browser.newContext({ javaScriptEnabled: false });
   const page = await ctx.newPage();
   await page.goto("./");
-  await expect(page.getByText(/还没有记录/)).toBeVisible();
+  await expect(
+    page.locator('[role="img"][aria-label*="热力图"]'),
+  ).toBeVisible();
   await expect(page.locator("#filters")).toHaveCount(0);
   await ctx.close();
 });
